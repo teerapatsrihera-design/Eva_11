@@ -18,10 +18,12 @@ hashPassword, verifyPassword) / ลายเซ็น=<canvas> เขียน�
 PDF=window.print() + class print:hidden / Dashboard=stat, progress ของ DaisyUI /
 Unit Test=node --test + node:assert / state ฝั่ง client=localStorage + lib/auth.js
 
-## โครงโปรเจกต์ (Git repo เดียว อยู่ที่ C:\Eva_Learn)
-- frontend/: pages/, components/, lib/auth.js, lib/api.js, lib/validate.js, schemas/
-- backend/: server.js, db.js, routes/, middleware/, utils/, schemas/, uploads/, tests/
-- docs/criteria.md (เกณฑ์ฉบับเต็ม ห้ามแก้)
+## โครงโปรเจกต์ (Git repo เดียว อยู่ที่ C:\Eva_11)
+- frontend/: pages/, components/, lib/auth.js, lib/api.js, lib/validate.js, schemas/, Dockerfile
+- backend/: server.js (เปิด port), app.js (สร้าง express app ให้เทสต์ import ได้), env.js (โหลด .env),
+  db.js, routes/, middleware/, utils/, schemas/, sql/ (schema.sql, seed.sql), uploads/,
+  backups/ (ไฟล์สำรอง .sql ไม่ commit), tests/, Dockerfile
+- docs/criteria.md (เกณฑ์ฉบับเต็ม ห้ามแก้), docs/guide/ (คู่มือสอนทีละบท)
 - docker-compose.yml, README.md (เอกสาร API), .env.example
 
 ## กติกาโค้ด
