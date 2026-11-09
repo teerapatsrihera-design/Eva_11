@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* ไม่ใช้ join ของ daisyUI: CSS ของมันใช้ @scope ที่ Turbopack (next dev) ยัง parse ไม่ได้
+   และ Tailwind จะสร้าง class นี้เองทุกครั้งที่โค้ดมีคำว่า .join() */
+@plugin "daisyui" {
+  exclude: join;
+}

@@ -1,0 +1,62 @@
+# รันทั้งระบบ (deploy):        docker compose up -d --build
+# รันเฉพาะฐานข้อมูล (พัฒนา):  docker compose up -d mysql   แล้วรัน backend/frontend ด้วย npm run dev
+# ค่าต่างๆ อ่านจากไฟล์ .env
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: ${DB_CONTAINER}
+    restart: unless-stopped
+    command:
+      - --mysql-native-password=ON
+      - --authentication-policy=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      TZ: Asia/Bangkok
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # รันอัตโนมัติตอนสร้างฐานข้อมูลครั้งแรก (schema.sql ก่อน seed.sql ตามตัวอักษร)
+      - ./backend/sql:/docker-entrypoint-initdb.d
+    # backend รอจนฐานข้อมูลพร้อมจริงก่อนเริ่ม
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      retries: 30
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql # ชื่อ service ด้านบน
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_CONTAINER: "" # ว่าง = Backup เรียก mysqldump ตรงๆ ไม่ใช้ docker exec
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      TZ: Asia/Bangkok
+    ports:
+      - "${PORT}:5000"
+    volumes:
+      # ไฟล์หลักฐานและไฟล์สำรองเก็บไว้บนเครื่อง ไม่หายเมื่อสร้าง container ใหม่
+      - ./backend/uploads:/app/uploads
+      - ./backend/backups:/app/backups
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT}:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
