@@ -117,7 +117,7 @@ Eva_Learn/                  ← โฟลเดอร์หลัก (Git repo �
 │   ├── middleware/         ← ด่านตรวจ token / สิทธิ์ / ข้อมูล
 │   ├── schemas/            ← กฎตรวจข้อมูล (Zod)
 │   ├── utils/              ← ฟังก์ชันช่วย
-│   ├── sql/                ← schema.sql, seed.sql (บท 02)
+│   ├── sql/                ← schema.sql (บท 02)
 │   ├── uploads/            ← ไฟล์หลักฐานที่ผู้ใช้อัปโหลด
 │   └── tests/              ← ไฟล์ทดสอบ (บท 12)
 └── frontend/               ← Next.js (บท 07-10)
@@ -377,7 +377,7 @@ services:
       - "${DB_PORT}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      # รันอัตโนมัติตอนสร้างฐานข้อมูลครั้งแรก (schema.sql ก่อน seed.sql ตามตัวอักษร)
+      # รันอัตโนมัติตอนสร้างฐานข้อมูลครั้งแรก
       - ./backend/sql:/docker-entrypoint-initdb.d
 
 volumes:
@@ -398,7 +398,7 @@ volumes:
 | 10-11 | เปิด port: `port ของเครื่องเรา:port ในกล่อง` | backend ที่รันบนเครื่องเราต่อ MySQL ผ่าน `localhost:3306` ได้ |
 | 12-13 | เก็บข้อมูลไว้ใน volume ชื่อ `mysql_data` | ปิด/ลบกล่องแล้วข้อมูลไม่หาย |
 | 14 | คอมเมนต์ | - |
-| 15 | เอาโฟลเดอร์ `backend/sql` ไปวางในจุดพิเศษของ MySQL | **ไฟล์ .sql ในโฟลเดอร์นี้ถูกรันอัตโนมัติตอนสร้างฐานข้อมูลครั้งแรก** (บท 02 จะสร้าง schema.sql, seed.sql) |
+| 15 | เอาโฟลเดอร์ `backend/sql` ไปวางในจุดพิเศษของ MySQL | **ไฟล์ .sql ในโฟลเดอร์นี้ถูกรันอัตโนมัติตอนสร้างฐานข้อมูลครั้งแรก** (บท 02 จะสร้าง schema.sql) |
 | 17-18 | ประกาศว่ามี volume ชื่อ `mysql_data` | ต้องประกาศไว้ล่างสุด ระดับเดียวกับ `services` (ไม่ย่อหน้า) |
 
 🧩 **Syntax ที่ควรสังเกตในไฟล์นี้**
@@ -909,13 +909,17 @@ git status
 
 ✅ **ตรวจก่อน commit:** ในรายการ (สีเขียว) **ต้องไม่มี** `.env` และ `node_modules` ถ้ามี แปลว่า `.gitignore` ผิด ให้แก้ก่อน
 
+> 💡 ถ้าตอน `git add .` ขึ้น `warning: ... LF will be replaced by CRLF` หลายบรรทัด ไม่เป็นไร เป็นการแปลงปลายบรรทัดของ Git บน Windows ไม่มีผลกับโปรแกรม
+
 ```bash
 git commit -m "Initial project setup"
 ```
 
 (`-m` = ข้อความบอกว่า commit นี้ทำอะไร นิยมเขียนภาษาอังกฤษสั้นๆ)
 
-✅ **ต้องเห็น:** ข้อความ `[master (root-commit) …] Initial project setup` และจำนวนไฟล์ที่ commit
+✅ **ต้องเห็น:** ข้อความ `[master (root-commit) …] Initial project setup` และจำนวนไฟล์ที่ commit (บางเครื่องขึ้น `main` แทน `master` ให้จำชื่อนี้ไว้ใช้ตอน push ในบท 13 ขั้น 13.3.4)
+
+> 💡 create-next-app เวอร์ชันนี้สร้างไฟล์ `frontend/AGENTS.md` มาด้วย เป็นคำแนะนำสำหรับเครื่องมือ AI ไม่มีผลกับระบบ จะลบหรือเก็บไว้ก็ได้
 
 > ❗ ครั้งแรกถ้าขึ้น `Please tell me who you are` ให้ตั้งชื่อก่อน
 > `git config --global user.name "ชื่อทีม"` และ `git config --global user.email "อีเมล"` แล้ว commit ใหม่

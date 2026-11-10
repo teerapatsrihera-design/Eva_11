@@ -268,7 +268,7 @@ describe("indicatorProgress ความคืบหน้ารายตัว�
 | 18-20 | ตัวชี้วัดแบบต้องแนบไฟล์ (`scale` มี `evidence_type: "file"`): ครบ 2 อย่าง = 100, คะแนนอย่างเดียว = 50, ไม่มีอะไร = 0 | ตรงกับแถบความคืบหน้าบท 09 |
 | 23 | ไม่ต้องแนบ: มีคะแนน (แม้ได้ 0) = 100 | คะแนน 0 ก็นับว่ากรอกแล้ว |
 
-### ขั้นที่ 12.3.4 สรุปผลรายบุคคล: เตรียมข้อมูลตัวอย่าง
+### ขั้นที่ 12.3.4 สรุปผลรายบุคคล: เตรียมค่าสำหรับเทส
 
 > 🎯 **ขั้นนี้จะได้:** ข้อมูลจำลองกรรมการ 3 คน (ยืนยัน 2 ร่าง 1)
 
@@ -358,7 +358,7 @@ describe("buildResult สรุปผลผู้รับการประเ�
 
 ## 12.4 Unit Test: เรียงข้อมูล (เกณฑ์ 7.5)
 
-### ขั้นที่ 12.4.1 ข้อมูลตัวอย่าง และตัวช่วยอ่านผล
+### ขั้นที่ 12.4.1 ค่าสำหรับเทส และตัวช่วยอ่านผล
 
 > 🎯 **ขั้นนี้จะได้:** ข้อมูลที่มีทั้งค่าว่างและชื่อภาษาไทย
 
@@ -705,7 +705,7 @@ describe("findDataIssues ตรวจความครบถ้วนของ�
 
 ## 12.7 API Test (เกณฑ์ 7.1, 7.2, 7.3, 7.6)
 
-📖 ต้อง **เปิด MySQL** ก่อน (`docker compose up -d mysql`) และฐานข้อมูลต้องเป็นข้อมูลตัวอย่าง (login hr / 123456 ได้) เทสนี้เพิ่มผู้ใช้ทดสอบ แล้วลบทิ้งตอนจบ ข้อมูลเดิมไม่เปลี่ยน
+📖 ต้อง **เปิด MySQL** ก่อน (`docker compose up -d mysql`) เทสนี้สร้างบัญชีทดสอบเองผ่าน API สมัครสมาชิก จึงรันบนฐานข้อมูลว่างได้ และลบข้อมูลทดสอบทิ้งตอนจบ ข้อมูลเดิมไม่เปลี่ยน
 
 ### ขั้นที่ 12.7.1 ตัวช่วยเรียก API
 
@@ -716,12 +716,18 @@ describe("findDataIssues ตรวจความครบถ้วนของ�
 ```js
 // ทดสอบ Service API (เกณฑ์ 7.1, 7.2, 7.3, 7.6) ต้องเปิด MySQL (docker compose up -d) ก่อน
 // เปิด app ที่ port สุ่ม จึงรันพร้อม npm run dev ได้ ข้อมูลที่เพิ่มระหว่างทดสอบจะถูกลบตอนจบ
+// สร้างบัญชีทดสอบเองผ่าน register จึงไม่ต้องมีข้อมูลตั้งต้นใน DB
 import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import app from "../app.js";
 import pool from "../db.js";
 
-let server, baseUrl, hrToken, evaluateeToken, newUserId;
+const PASSWORD = "123456";
+const hrName = `t_hr_${Date.now()}`;
+const meName = `t_me_${Date.now()}`;
+const otherName = `t_other_${Date.now()}`;
+
+let server, baseUrl, hrToken, evaluateeToken, newUserId, meId, otherId, hrId, topicId;
 
 // เรียก API คืน { code, body }
 async function api(method, url, { token, body } = {}) {
@@ -733,6 +739,12 @@ async function api(method, url, { token, body } = {}) {
 
 const login = (username, password) => api("POST", "/auth/login", { body: { username, password } });
 
+// สมัครสมาชิกแล้วคืน id
+async function registerUser(username) {
+  const { body } = await api("POST", "/auth/register", { body: { username, password: PASSWORD, full_name: `ทดสอบ ${username}` } });
+  return body.data.id;
+}
+
 // (ขั้น 12.7.2 จะเขียนต่อตรงนี้)
 ```
 
@@ -740,19 +752,21 @@ const login = (username, password) => api("POST", "/auth/login", { body: { usern
 
 | บรรทัด | ทำอะไร | เอาไว้ใช้ทำอะไร |
 |---|---|---|
-| 3 | `before` / `after` = ทำก่อนเทสแรก / หลังเทสสุดท้าย | เปิด-ปิด server |
-| 5 | ดึง Express app (บท 03 ขั้น 3.9) | เปิดเองในไฟล์เทส |
-| 6 | ดึง pool ฐานข้อมูล | ลบข้อมูลทดสอบ และปิดการเชื่อมต่อตอนจบ |
-| 8 | ตัวแปรที่ **ใช้ร่วมระหว่างเทส** (เช่น token จากเทส login ใช้ต่อในเทสอื่น) | - |
-| 11 | `api(method, url, { token, body })` ส่วนที่ 3 ไม่ส่งได้ (`= {}`) | `api("GET", "/users")` ก็ได้ |
-| 13 | มี token → ใส่ `Authorization: Bearer …` | - |
-| 14 | `fetch` (มากับ Node.js ไม่ต้องลง axios) `body && …` = มี body ค่อยแปลงเป็น JSON | - |
-| 15 | คืนรหัส HTTP และข้อมูลที่ตอบ | ตรวจทั้งสองอย่าง |
-| 18 | ตัวช่วย login | - |
+| 4 | `before` / `after` = ทำก่อนเทสแรก / หลังเทสสุดท้าย | เปิด-ปิด server |
+| 6 | ดึง Express app (บท 03 ขั้น 3.9) | เปิดเองในไฟล์เทส |
+| 7 | ดึง pool ฐานข้อมูล | เปลี่ยน role, ลบข้อมูลทดสอบ และปิดการเชื่อมต่อตอนจบ |
+| 9-12 | รหัสผ่านและชื่อบัญชีทดสอบ ต่อท้ายด้วยเวลาปัจจุบัน | ชื่อไม่ซ้ำกับครั้งก่อน |
+| 14 | ตัวแปรที่ **ใช้ร่วมระหว่างเทส** (เช่น token จาก `before` ใช้ต่อในทุกเทส) | - |
+| 17 | `api(method, url, { token, body })` ส่วนที่ 3 ไม่ส่งได้ (`= {}`) | `api("GET", "/users")` ก็ได้ |
+| 19 | มี token → ใส่ `Authorization: Bearer …` | - |
+| 20 | `fetch` (มากับ Node.js ไม่ต้องลง axios) `body && …` = มี body ค่อยแปลงเป็น JSON | - |
+| 21 | คืนรหัส HTTP และข้อมูลที่ตอบ | ตรวจทั้งสองอย่าง |
+| 24 | ตัวช่วย login | - |
+| 27-30 | ตัวช่วยสมัครสมาชิก คืน id ของบัญชีใหม่ | เตรียมบัญชีใน `before` |
 
 ### ขั้นที่ 12.7.2 เปิดและปิด server
 
-> 🎯 **ขั้นนี้จะได้:** server เปิดที่ port สุ่ม ปิดเองเมื่อเทสจบ
+> 🎯 **ขั้นนี้จะได้:** server เปิดที่ port สุ่ม มีบัญชีทดสอบพร้อมใช้ และลบข้อมูลทดสอบเมื่อเทสจบ
 
 ⌨️ **พิมพ์โค้ด:** พิมพ์แทนบรรทัด `// (ขั้น 12.7.2 จะเขียนต่อตรงนี้)`
 
@@ -761,10 +775,30 @@ before(async () => {
   server = app.listen(0);
   await new Promise((resolve) => server.once("listening", resolve));
   baseUrl = `http://localhost:${server.address().port}/api`;
+
+  // เตรียมบัญชีแบบเดียวกับการใช้งานจริง: สมัคร แล้วเปลี่ยนคนแรกเป็น hr ใน DB
+  hrId = await registerUser(hrName);
+  meId = await registerUser(meName);
+  otherId = await registerUser(otherName);
+  await pool.query("UPDATE users SET role = 'hr' WHERE id = ?", [hrId]);
+  hrToken = (await login(hrName, PASSWORD)).body.data.token;
+  evaluateeToken = (await login(meName, PASSWORD)).body.data.token;
+
+  // รายงานต้องมีตัวชี้วัดอย่างน้อย 1 ตัว
+  const topic = await api("POST", "/topics", {
+    token: hrToken,
+    body: { title: "หัวข้อทดสอบ API", start_date: "2026-01-01", end_date: "2026-12-31" },
+  });
+  topicId = topic.body.data.id;
+  await api("POST", "/indicators", {
+    token: hrToken,
+    body: { topic_id: topicId, name: "ตัวชี้วัดทดสอบ", weight: 100, score_type: "scale_4", evidence_type: "none" },
+  });
 });
 
 after(async () => {
-  if (newUserId) await pool.query("DELETE FROM users WHERE id = ?", [newUserId]);
+  await pool.query("DELETE FROM users WHERE id IN (?)", [[hrId, meId, otherId, newUserId ?? 0]]);
+  await pool.query("DELETE FROM evaluation_topics WHERE id = ?", [topicId]);
   server.close();
   await pool.end();
 });
@@ -777,29 +811,67 @@ after(async () => {
 | 2 | `listen(0)` = ให้ระบบเลือก port ว่างให้ | ไม่ชนกับ 5000 ที่ `npm run dev` ใช้อยู่ |
 | 3 | รอจน server พร้อม (Promise แบบบท 11 ขั้น 11.4.3) | - |
 | 4 | ถามว่าได้ port อะไร แล้วสร้าง URL ฐาน | - |
-| 8 | ถ้าเทสพังกลางทาง ผู้ใช้ทดสอบยังไม่ถูกลบ → ลบตรงนี้ | ข้อมูลไม่ค้าง |
-| 9-10 | ปิด server และปิดการเชื่อมต่อฐานข้อมูล | **ไม่ปิด = เทสค้างไม่จบ** |
+| 7-9 | สมัครบัญชีทดสอบ 3 บัญชี | ไม่ต้องมีข้อมูลตั้งต้นใน DB |
+| 10 | เปลี่ยนบัญชีแรกเป็น hr | API สมัครสมาชิกสร้าง hr ไม่ได้ |
+| 11-12 | login แล้วเก็บ token | เทสถัดไปใช้ |
+| 15-23 | เพิ่มหัวข้อและตัวชี้วัด | เทสรายงานต้องมีตัวชี้วัด |
+| 27-28 | ลบบัญชีและหัวข้อทดสอบ | ข้อมูลไม่ค้าง แม้เทสพังกลางทาง |
+| 29-30 | ปิด server และปิดการเชื่อมต่อฐานข้อมูล | **ไม่ปิด = เทสค้างไม่จบ** |
 
-### ขั้นที่ 12.7.3 ทดสอบ Login ถูก/ผิด (เกณฑ์ 7.1)
+### ขั้นที่ 12.7.3 ทดสอบสมัครสมาชิก และ Login ถูก/ผิด (เกณฑ์ 7.1)
 
-> 🎯 **ขั้นนี้จะได้:** 4 กรณีของการ login
+> 🎯 **ขั้นนี้จะได้:** 4 กรณีของการสมัครสมาชิก และ 4 กรณีของการ login
 
 ⌨️ **พิมพ์โค้ด:** พิมพ์แทนบรรทัด `// (ขั้น 12.7.3 จะเขียนต่อตรงนี้)`
 
 ```js
+describe("POST /api/auth/register", () => {
+  const username = `t_reg_${Date.now()}`;
+  const payload = { username, password: PASSWORD, full_name: "ผู้สมัครทดสอบ" };
+
+  after(() => pool.query("DELETE FROM users WHERE username = ?", [username]));
+
+  test("สมัครสำเร็จ ได้ 201 และแอบส่ง role = hr ก็ยังเป็น evaluatee", async () => {
+    const { code, body } = await api("POST", "/auth/register", { body: { ...payload, role: "hr" } });
+    assert.equal(code, 201);
+    assert.equal(body.data.password, undefined); // ไม่ส่งรหัสผ่านกลับ
+    const [[row]] = await pool.query("SELECT role, must_change_password FROM users WHERE id = ?", [body.data.id]);
+    assert.equal(row.role, "evaluatee");
+    assert.equal(row.must_change_password, 0); // ตั้งรหัสเองแล้ว ไม่ต้องบังคับเปลี่ยน
+  });
+
+  test("สมัครแล้ว login ได้", async () => {
+    const { code, body } = await login(username, PASSWORD);
+    assert.equal(code, 200);
+    assert.equal(body.data.user.role, "evaluatee");
+    assert.equal(body.data.user.must_change_password, false);
+  });
+
+  test("username ซ้ำ ได้ 400", async () => {
+    const { code, body } = await api("POST", "/auth/register", { body: payload });
+    assert.equal(code, 400);
+    assert.equal(body.message, "ข้อมูลซ้ำกับที่มีอยู่แล้ว");
+  });
+
+  test("รหัสผ่านสั้นเกินไป ได้ 400 พร้อมช่องที่ผิด", async () => {
+    const { code, body } = await api("POST", "/auth/register", { body: { ...payload, username: `${username}_x`, password: "123" } });
+    assert.equal(code, 400);
+    assert.equal(body.data[0].field, "password");
+  });
+});
+
 describe("POST /api/auth/login", () => {
   test("username/password ถูก ได้ 200 + token", async () => {
-    const { code, body } = await login("hr", "123456");
+    const { code, body } = await login(hrName, PASSWORD);
     assert.equal(code, 200);
     assert.equal(body.status, "success");
     assert.equal(body.data.user.role, "hr");
     assert.equal(body.data.user.password_hash, undefined); // ไม่ส่ง hash กลับ
-    hrToken = body.data.token;
-    evaluateeToken = (await login("teach1", "123456")).body.data.token;
+    assert.ok(body.data.token);
   });
 
   test("รหัสผ่านผิด ได้ 401", async () => {
-    const { code, body } = await login("hr", "wrong-password");
+    const { code, body } = await login(hrName, "wrong-password");
     assert.equal(code, 401);
     assert.deepEqual(body, { status: "error", message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", data: null });
   });
@@ -824,14 +896,18 @@ describe("POST /api/auth/login", () => {
 
 | บรรทัด | ทำอะไร | เอาไว้ใช้ทำอะไร |
 |---|---|---|
-| 4-6 | ถูก: 200, status success, บทบาท hr | - |
-| 7 | **ต้องไม่ส่ง hash รหัสผ่านกลับ** | ความปลอดภัย (บท 04) |
-| 8-9 | เก็บ token ของ hr และ teach1 | เทสถัดไปใช้ |
-| 15 | ผิด: ตรวจทั้งก้อนว่าตรงรูปแบบ `{ status, message, data }` | กฎ response รูปแบบเดียว |
-| 18-22 | ชื่อผู้ใช้ไม่มีในระบบ ได้ **ข้อความเดียวกับรหัสผิด** | ไม่บอกคนร้ายว่าชื่อผู้ใช้นี้มีจริง |
-| 24-28 | ไม่กรอก → 400 (Zod ตรวจก่อนถึงฐานข้อมูล) | - |
+| 5 | `after` ใน `describe` ลบบัญชีที่สมัครในกลุ่มนี้ | ข้อมูลไม่ค้าง |
+| 7-14 | แอบส่ง `role: "hr"` แล้วตรวจใน DB ว่ายังเป็น evaluatee | สมัครเป็น hr เองไม่ได้ |
+| 16-21 | สมัครแล้ว login ได้ และไม่ถูกบังคับเปลี่ยนรหัส | - |
+| 23-27 | สมัครซ้ำ → 400 | - |
+| 29-33 | รหัสสั้นเกินไป → 400 พร้อมบอกช่องที่ผิด | - |
+| 38-41 | ถูก: 200, status success, บทบาท hr | - |
+| 42 | **ต้องไม่ส่ง hash รหัสผ่านกลับ** | ความปลอดภัย (บท 04) |
+| 49 | ผิด: ตรวจทั้งก้อนว่าตรงรูปแบบ `{ status, message, data }` | กฎ response รูปแบบเดียว |
+| 52-56 | ชื่อผู้ใช้ไม่มีในระบบ ได้ **ข้อความเดียวกับรหัสผิด** | ไม่บอกคนร้ายว่าชื่อผู้ใช้นี้มีจริง |
+| 58-62 | ไม่กรอก → 400 (Zod ตรวจก่อนถึงฐานข้อมูล) | - |
 
-> 💡 เทสในไฟล์เดียวกัน **รันตามลำดับ** เทสแรกจึงเก็บ token ไว้ให้เทสหลังใช้ได้
+> 💡 token ถูกเตรียมไว้ใน `before` ทุกเทสในไฟล์จึงใช้ `hrToken` และ `evaluateeToken` ได้
 
 ### ขั้นที่ 12.7.4 ทดสอบความปลอดภัย
 
@@ -1006,13 +1082,13 @@ describe("/api/users (POST, GET, PUT, DELETE)", () => {
 ```js
 describe("GET /api/reports/evaluatees/:id (สิทธิ์ตามบทบาท)", () => {
   test("ผู้รับการประเมินดูผลของตัวเองได้", async () => {
-    const { code, body } = await api("GET", "/reports/evaluatees/5", { token: evaluateeToken });
+    const { code, body } = await api("GET", `/reports/evaluatees/${meId}`, { token: evaluateeToken });
     assert.equal(code, 200);
-    assert.equal(body.data.evaluatee.username, "teach1");
+    assert.equal(body.data.evaluatee.username, meName);
     assert.equal(body.data.rows.length > 0, true);
   });
   test("ดูผลของคนอื่นไม่ได้ ได้ 403", async () => {
-    const { code } = await api("GET", "/reports/evaluatees/6", { token: evaluateeToken });
+    const { code } = await api("GET", `/reports/evaluatees/${otherId}`, { token: evaluateeToken });
     assert.equal(code, 403);
   });
   test("hr ขอผู้รับประเมินที่ไม่มี ได้ 404", async () => {
@@ -1024,8 +1100,8 @@ describe("GET /api/reports/evaluatees/:id (สิทธิ์ตามบทบ�
 
 | บรรทัด | ทำอะไร | เอาไว้ใช้ทำอะไร |
 |---|---|---|
-| 3-6 | teach1 (id 5) ดูของตัวเอง → 200 มีแถวคะแนน | - |
-| 9-10 | teach1 ดูของ teach2 (id 6) → **403** | ตรวจสิทธิ์ 3 แบบ (บท 06 ขั้น 6.8.4) |
+| 3-6 | บัญชีทดสอบดูของตัวเอง → 200 มีแถวคะแนน | - |
+| 9-10 | บัญชีทดสอบดูของอีกคน → **403** | ตรวจสิทธิ์ 3 แบบ (บท 06 ขั้น 6.8.4) |
 | 13-14 | id ไม่มี → 404 | - |
 
 ## 12.8 รันเทสทั้งหมด
@@ -1045,9 +1121,9 @@ npm test
 ✅ **ผ่านเมื่อ:** ท้ายผลเห็น
 
 ```text
-ℹ tests 55
+ℹ tests 59
 ℹ suites 14
-ℹ pass 55
+ℹ pass 59
 ℹ fail 0
 ```
 
@@ -1082,7 +1158,7 @@ npm test
 
 3. แท็บ **Auth → Bearer** ของแต่ละ request วาง token จาก "Login hr" (บท 04)
 
-> 💡 ลบเฉพาะหัวข้อที่เพิ่งเพิ่ม ถ้าลบหัวข้อ 1-2 ของข้อมูลตัวอย่าง ตัวชี้วัดจะหายไปด้วย
+> 💡 ลบเฉพาะหัวข้อที่เพิ่งเพิ่ม ถ้าลบหัวข้อ 1-2 ตัวชี้วัดจริงจะหายไปด้วย
 
 ## 12.10 ตรวจ Console และ Network (เกณฑ์ 7.7)
 
@@ -1142,8 +1218,8 @@ npm test
 
 | เกณฑ์ | กรณีทดสอบ | ผลที่คาดหวัง | ผล |
 |---|---|---|---|
-| 7.1 | login hr / 123456 | เข้าหน้า Dashboard | ✅ |
-| 7.1 | login hr / รหัสผิด | "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" | ✅ |
+| 7.1 | login hr1 / 123456 | เข้าหน้า Dashboard | ✅ |
+| 7.1 | login hr1 / รหัสผิด | "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" | ✅ |
 | 7.2 | เพิ่มผู้ใช้ใหม่ | ได้รหัสชั่วคราว ผู้ใช้อยู่ในรายการ | ✅ |
 | 7.3 | แก้ชื่อผู้ใช้ | ชื่อในรายการเปลี่ยน | ✅ |
 | 7.4 | เพิ่มผู้ใช้ อีเมล "abc" | "รูปแบบอีเมลไม่ถูกต้อง" ใต้ช่อง | ✅ |
@@ -1162,7 +1238,7 @@ npm test
 | `Cannot find module 'C:\...\tests'` | script ใช้ `node --test tests/` | ใช้ `node --test "tests/*.test.js"` |
 | เทสค้างไม่จบ | ไม่ได้ `pool.end()` / `server.close()` | ใส่ใน `after()` (ขั้น 12.7.2) |
 | API test ได้ `ECONNREFUSED` | MySQL ไม่ได้รัน | `docker compose up -d mysql` |
-| API test login ไม่ผ่าน (401) | รหัสผ่าน hr/teach1 ถูกเปลี่ยนไปแล้ว | รีเซ็ตฐานข้อมูล (บท 02 ขั้น 2.6.1) |
+| API test สมัครสมาชิกไม่ผ่าน | MySQL ไม่ได้เปิด หรือ `.env` ผิด | รัน `docker compose up -d mysql` และตรวจ `.env` |
 | เทสผู้ใช้ซ้ำตอนรันรอบสอง | ใช้ชื่อตายตัว | ใช้ `` `api_test_${Date.now()}` `` |
 | `assert.equal` กับ array ไม่ผ่านทั้งที่หน้าตาเหมือนกัน | `===` เทียบว่าเป็นก้อนเดียวกัน | ใช้ `assert.deepEqual` |
 | `SyntaxError: Cannot use import statement` | package.json ไม่มี `"type": "module"` | ตรวจบท 01 |

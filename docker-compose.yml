@@ -19,7 +19,7 @@ services:
       - "${DB_PORT}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      # รันอัตโนมัติตอนสร้างฐานข้อมูลครั้งแรก (schema.sql ก่อน seed.sql ตามตัวอักษร)
+      # รันอัตโนมัติตอนสร้างฐานข้อมูลครั้งแรก
       - ./backend/sql:/docker-entrypoint-initdb.d
     # backend รอจนฐานข้อมูลพร้อมจริงก่อนเริ่ม
     healthcheck:

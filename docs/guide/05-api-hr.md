@@ -81,7 +81,7 @@ backend/
 
 > 🎯 **ขั้นนี้จะได้:** ส่วนแรกของ userSchema
 
-⌨️ **พิมพ์โค้ด:** สร้างไฟล์ใหม่ `backend/schemas/user.js`
+📖 **ทบทวน (ไม่ต้องพิมพ์):** `backend/schemas/user.js` พิมพ์ไว้แล้วในบท 04 ขั้น 4.4.4 ขั้นนี้อธิบายทีละส่วน
 
 ```js
 import { z } from "zod";
@@ -93,8 +93,6 @@ export const userSchema = z.object({
     .min(3, "ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร")
     .regex(/^[a-zA-Z0-9_.]+$/, "ชื่อผู้ใช้ใช้ได้เฉพาะ a-z, 0-9, _ และ ."),
   full_name: requiredText("กรุณากรอกชื่อ-สกุล", 100),
-  // (ขั้น 5.2.2 จะเขียนต่อตรงนี้)
-});
 ```
 
 🔍 **อ่านโค้ดทีละบรรทัด**
@@ -137,7 +135,7 @@ export const userSchema = z.object({
 
 > 🎯 **ขั้นนี้จะได้:** ช่องไม่บังคับ ที่ตรวจรูปแบบเมื่อกรอก
 
-⌨️ **พิมพ์โค้ด:** ใน `schemas/user.js` พิมพ์แทนบรรทัด `// (ขั้น 5.2.2 จะเขียนต่อตรงนี้)`
+📖 **ทบทวน (ไม่ต้องพิมพ์):** ส่วนนี้อยู่ต่อจาก `full_name` ใน `schemas/user.js`
 
 ```js
   email: z
@@ -148,7 +146,6 @@ export const userSchema = z.object({
     .union([z.literal(""), z.string().regex(/^0\d{8,9}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก ขึ้นต้นด้วย 0")])
     .nullish()
     .transform((v) => v || null),
-  // (ขั้น 5.2.3 จะเขียนต่อตรงนี้)
 ```
 
 🔍 **อ่านโค้ดทีละบรรทัด**
@@ -177,7 +174,7 @@ export const userSchema = z.object({
 
 > 🎯 **ขั้นนี้จะได้:** userSchema ครบ และ schema สำหรับ "แก้ไข" กับ "แก้ข้อมูลตัวเอง"
 
-⌨️ **พิมพ์โค้ด:** ใน `schemas/user.js` พิมพ์แทนบรรทัด `// (ขั้น 5.2.3 จะเขียนต่อตรงนี้)`
+📖 **ทบทวน (ไม่ต้องพิมพ์):** ส่วนนี้เป็น 3 บรรทัดสุดท้ายของ `userSchema`
 
 ```js
   position: optionalText(100),
@@ -192,9 +189,7 @@ export const userSchema = z.object({
 | 1-2 | ตำแหน่ง แผนก ไม่บังคับ | ข้อมูลประกอบ |
 | 3 | บทบาทต้องเป็น `evaluatee` หรือ `committee` เท่านั้น | **hr สร้าง hr ด้วยกันไม่ได้** (กันการสร้างผู้ดูแลเพิ่มโดยไม่ตั้งใจ) |
 
-> ❗ ใต้บรรทัด `role: …` ต้องเป็น `});` เดิมจากขั้น 5.2.1 (ตัวปิด `z.object({`) **ไม่ต้องพิมพ์ `});` เพิ่ม**
-
-⌨️ **พิมพ์โค้ด:** เพิ่มต่อท้ายไฟล์ `schemas/user.js` (ใต้ `});`)
+⌨️ **พิมพ์โค้ด:** เพิ่มต่อท้ายไฟล์ `schemas/user.js` (ใต้ `});` ตัวสุดท้าย)
 
 ```js
 // แก้ไข: เปลี่ยนบทบาทไม่ได้
@@ -442,8 +437,8 @@ params.push("%สม%", "%สม%");     // ["evaluatee", "%สม%", "%สม%"
 
 | URL | ต้องได้ |
 |---|---|
-| `GET http://localhost:5000/api/users` | 200, 9 คน, **ไม่มี password_hash** |
-| `GET http://localhost:5000/api/users?role=evaluatee` | 200, 5 คน |
+| `GET http://localhost:5000/api/users` | 200, 6 คน, **ไม่มี password_hash** |
+| `GET http://localhost:5000/api/users?role=evaluatee` | 200, 2 คน |
 | `GET http://localhost:5000/api/users?q=สมชาย` | 200, 1 คน (สมชาย รักเรียน) |
 | `GET http://localhost:5000/api/users?role=committee&q=comm` | 200, 3 คน |
 
@@ -610,9 +605,9 @@ router.put("/:id/reset-password", async (req, res) => {
 | 6-10 | สุ่มรหัสใหม่ เก็บ hash และตั้ง `must_change_password = TRUE` | ผู้ใช้ต้องเปลี่ยนรหัสอีกครั้งตอน login |
 | 11 | ส่งรหัสชั่วคราวกลับ | hr แจ้งผู้ใช้ |
 
-✅ **ลองเลย:** PUT `/api/users/9/reset-password` → 200 พร้อม `temp_password` ใหม่
+✅ **ลองเลย:** POST `/api/users` เพิ่ม `{ "username": "teach7", "full_name": "ครูทดสอบ", "role": "evaluatee" }` แล้ว PUT `/api/users/(id ของ teach7)/reset-password` → 200 พร้อม `temp_password` ใหม่ เสร็จแล้ว DELETE `/api/users/(id ของ teach7)`
 
-> ❗ รีเซ็ตแล้ว teach5 จะใช้ `123456` ไม่ได้ ถ้าต้องการกลับเป็นข้อมูลตัวอย่าง ใช้คำสั่งรีเซ็ตฐานข้อมูล (บท 02 ขั้น 2.6.1)
+> ❗ อย่าทดสอบรีเซ็ตกับบัญชี `teach1`-`teach2` หรือ `comm1`-`comm3` เพราะรหัสจะไม่ใช่ `123456` อีก
 
 ## 5.4 นำเข้าผู้ใช้จากไฟล์ CSV (เสริม)
 
@@ -830,7 +825,7 @@ Object.fromEntries([["username", "teach10"], ["role", "evaluatee"]]);
 3. ช่องชื่อ `file` เลือกไฟล์ `frontend/public/users-template.csv`
 4. Send
 
-✅ **ต้องเห็น:** **201** "นำเข้าผู้ใช้สำเร็จ 2 คน" พร้อมรหัสชั่วคราว 2 คน
+✅ **ต้องเห็น:** **201** "นำเข้าผู้ใช้สำเร็จ 2 คน" พร้อมรหัสชั่วคราว 2 คน เสร็จแล้ว DELETE 2 บัญชีนี้ (`GET /api/users?q=10` ดู id) เพราะบท 08 จะนำเข้าไฟล์เดิมอีกครั้ง
 
 ✅ **Send ซ้ำ:** **400** "ข้อมูลซ้ำกับที่มีอยู่แล้ว" (ไม่มีใครถูกเพิ่มซ้ำ)
 
@@ -900,7 +895,7 @@ export default router;
 app.use("/api/indicators", indicatorRoutes);
 ```
 
-✅ **ลองเลย:** `GET /api/indicators?topic_id=2` → 3 ตัว (id 4, 5, 6)
+✅ **ลองเลย:** `GET /api/indicators?topic_id=2` → 200 และ `data` เป็น `[]` เพราะยังไม่มีตัวชี้วัด (ขั้น 5.5.2 จะเพิ่ม)
 
 ### ขั้นที่ 5.5.2 POST เพิ่มตัวชี้วัด
 
@@ -924,8 +919,20 @@ router.post("/", requireRole("hr"), validate(indicatorSchema), async (req, res) 
 
 > 🧩 แพตเทิร์นที่ 3 (เพิ่ม) ไม่มี syntax ใหม่ ตั้งชื่อตัวแปรสั้น `i` (indicator) แบบเดียวกับ `u` ของผู้ใช้
 
+⌨️ **ทำตาม:** POST `/api/indicators` เพิ่มตัวชี้วัดจริง 6 ตัว **ตามลำดับนี้** (token ของ hr) ใช้ต่อทั้งคู่มือ น้ำหนักรวม 100
+
+| id | body |
+|---|---|
+| 1 | `{"topic_id":1,"name":"การจัดทำแผนการจัดการเรียนรู้","description":"มีแผนการจัดการเรียนรู้ครบทุกรายวิชาที่สอน","weight":20,"score_type":"scale_4","evidence_type":"file","evidence_note":"ไฟล์ PDF แผนการจัดการเรียนรู้"}` |
+| 2 | `{"topic_id":1,"name":"การใช้สื่อและเทคโนโลยีในการสอน","description":"ใช้สื่อดิจิทัลหรือแพลตฟอร์มออนไลน์ประกอบการสอน","weight":15,"score_type":"scale_4","evidence_type":"any","evidence_note":"ภาพกิจกรรม หรือ URL สื่อการสอน"}` |
+| 3 | `{"topic_id":1,"name":"การทำวิจัยในชั้นเรียน","description":"มีงานวิจัยในชั้นเรียนอย่างน้อย 1 เรื่องต่อปีการศึกษา","weight":15,"score_type":"yes_no","evidence_type":"file","evidence_note":"ไฟล์ PDF รายงานวิจัย"}` |
+| 4 | `{"topic_id":2,"name":"การเข้ารับการอบรมพัฒนาตนเอง","description":"เข้ารับการอบรมอย่างน้อย 20 ชั่วโมงต่อปี","weight":10,"score_type":"yes_no","evidence_type":"any","evidence_note":"เกียรติบัตร หรือ URL หลักฐานการอบรม"}` |
+| 5 | `{"topic_id":2,"name":"การปฏิบัติตามระเบียบวินัย","description":"มาปฏิบัติงานตรงเวลาและปฏิบัติตามระเบียบของสถานศึกษา","weight":20,"score_type":"scale_4","evidence_type":"none"}` |
+| 6 | `{"topic_id":2,"name":"การมีส่วนร่วมในกิจกรรมสถานศึกษา","description":"เข้าร่วมกิจกรรมของสถานศึกษาและชุมชน","weight":20,"score_type":"scale_4","evidence_type":"url","evidence_note":"URL ภาพกิจกรรม"}` |
+
 ✅ **ลองเลย:**
-- POST `{ "topic_id": 1, "name": "ทดสอบ", "weight": 5, "score_type": "scale_4", "evidence_type": "none" }` → **201**
+- `GET /api/indicators?topic_id=2` → 3 ตัว (id 4, 5, 6)
+- POST `{ "topic_id": 1, "name": "ทดสอบ", "weight": 5, "score_type": "scale_4", "evidence_type": "none" }` → **201** (ตัวนี้เป็นตัวทดสอบ ขั้น 5.5.3 จะลบ)
 - POST เดิมแต่ `"weight": 0` → **400** "น้ำหนักต้องมากกว่า 0"
 - POST เดิมแต่ `"topic_id": 999` → **400** "ไม่พบข้อมูลที่อ้างอิง" (FK + error handler บท 03)
 
@@ -1019,13 +1026,7 @@ router.delete("/:id", requireRole("hr"), async (req, res) => {
 - `score IS NOT NULL` = คะแนนไม่ว่าง (ใน SQL ต้องใช้ `IS NULL` / `IS NOT NULL` ใช้ `= NULL` ไม่ได้)
 - SQL ยาวหลายบรรทัด ใช้ backtick `` ` `` ครอบ (ขึ้นบรรทัดใหม่ได้ ส่วน `" "` ขึ้นบรรทัดใหม่ไม่ได้)
 
-✅ **ลองเลย:** PUT `/api/indicators/1` body ข้อมูลครบแต่ `"score_type": "yes_no"`
-
-```json
-{ "topic_id": 1, "name": "การจัดทำแผนการจัดการเรียนรู้", "weight": 20, "score_type": "yes_no", "evidence_type": "file" }
-```
-
-→ **400** "ตัวชี้วัดนี้มีการให้คะแนนแล้ว เปลี่ยนรูปแบบการประเมินไม่ได้"
+✅ **ลองเลย:** ขั้นนี้ยังทดสอบไม่ได้ เพราะยังไม่มีใครให้คะแนน กดบันทึกแล้ว terminal ต้องไม่มี error จะได้ทดสอบจริงในบท 06 ขั้น 6.7.9
 
 > 🏃 **ฉบับย่อสำหรับวันแข่ง:** ข้ามขั้นนี้ได้ถ้าเวลาไม่พอ
 
@@ -1126,7 +1127,7 @@ assignments (a)                users (c)               users (e)
 app.use("/api/assignments", assignmentRoutes);
 ```
 
-✅ **ลองเลย:** `GET /api/assignments?evaluatee_id=5` → 3 แถว มี `committee_name`, `status` (confirmed / draft / pending) และ `scored_count` (6 / 2 / 0)
+✅ **ลองเลย:** `GET /api/assignments` → 200 และ `data` เป็น `[]` เพราะยังไม่ได้มอบหมาย (ขั้น 5.6.3 จะเพิ่ม)
 
 ### ขั้นที่ 5.6.2 ฟังก์ชันตรวจว่ามีประธานแล้วหรือยัง
 
@@ -1233,14 +1234,26 @@ router.post("/", validate(assignmentSchema), async (req, res) => {
 
 > 💡 **มอบหมายซ้ำ** ไม่ต้องเช็กเอง: `UNIQUE (committee_id, evaluatee_id)` (บท 02 ขั้น 2.4.5) ทำให้ได้ 400 "ข้อมูลซ้ำกับที่มีอยู่แล้ว"
 
+⌨️ **ทำตาม:** POST `/api/assignments` มอบหมายกรรมการจริง 6 รายการ **ตามลำดับนี้** แต่ละรายการต้องได้ **201** และใช้ต่อทั้งคู่มือ
+
+| id | body | ความหมาย |
+|---|---|---|
+| 1 | `{"committee_id":2,"evaluatee_id":5,"committee_role":"chair"}` | comm1 เป็นประธานของ teach1 |
+| 2 | `{"committee_id":3,"evaluatee_id":5,"committee_role":"member"}` | comm2 เป็นกรรมการร่วมของ teach1 |
+| 3 | `{"committee_id":4,"evaluatee_id":5,"committee_role":"member"}` | comm3 เป็นกรรมการร่วมของ teach1 |
+| 4 | `{"committee_id":2,"evaluatee_id":6,"committee_role":"chair"}` | comm1 เป็นประธานของ teach2 |
+| 5 | `{"committee_id":3,"evaluatee_id":6,"committee_role":"member"}` | comm2 เป็นกรรมการร่วมของ teach2 |
+| 6 | `{"committee_id":4,"evaluatee_id":6,"committee_role":"member"}` | comm3 เป็นกรรมการร่วมของ teach2 |
+
 ✅ **ลองเลย:**
 
 | body | ต้องได้ |
 |---|---|
-| `{"committee_id":3,"evaluatee_id":9,"committee_role":"chair"}` | **400** "ผู้รับการประเมินคนนี้มีประธานกรรมการแล้ว" (teach5 มี comm3 เป็นประธาน) |
-| `{"committee_id":5,"evaluatee_id":9,"committee_role":"member"}` | **400** "ผู้ใช้ที่เลือกไม่ใช่กรรมการ" (id 5 คือครู) |
+| `{"committee_id":3,"evaluatee_id":6,"committee_role":"chair"}` | **400** "ผู้รับการประเมินคนนี้มีประธานกรรมการแล้ว" (teach2 มี comm1 เป็นประธาน) |
+| `{"committee_id":5,"evaluatee_id":6,"committee_role":"member"}` | **400** "ผู้ใช้ที่เลือกไม่ใช่กรรมการ" (id 5 คือครู) |
 | `{"committee_id":4,"evaluatee_id":5,"committee_role":"member"}` | **400** "ข้อมูลซ้ำกับที่มีอยู่แล้ว" (มอบหมายไว้แล้ว) |
-| `{"committee_id":3,"evaluatee_id":9,"committee_role":"member"}` | **201** |
+
+`GET /api/assignments?evaluatee_id=5` → 3 แถว มี `committee_name` สถานะ `pending` ทุกแถว และ `scored_count` เป็น 0
 
 ### ขั้นที่ 5.6.4 PUT เปลี่ยนบทบาท และ DELETE ยกเลิกการมอบหมาย
 
@@ -1294,11 +1307,11 @@ router.delete("/:id", async (req, res) => {
 
 > 🎯 **ขั้นนี้จะได้:** มั่นใจว่า API ของ hr ทำงานครบ
 
-> 💡 รีเซ็ตฐานข้อมูลก่อน (บท 02 ขั้น 2.6.1) ผลจะตรงตาราง แล้ว login เป็น hr ใหม่
+> 💡 ใช้ token ของ hr ไม่ต้องรีเซ็ตฐานข้อมูล
 
 | # | Method + URL | Body | ต้องได้ |
 |---|---|---|---|
-| 1 | GET `/api/users?role=evaluatee` | - | 200, 5 คน, **ไม่มี password_hash** |
+| 1 | GET `/api/users?role=evaluatee` | - | 200, 2 คน, **ไม่มี password_hash** |
 | 2 | GET `/api/users?q=สมชาย` | - | 200, 1 คน |
 | 3 | POST `/api/users` | `{"username":"teach6","full_name":"ครูใหม่","role":"evaluatee"}` | 201 + `temp_password` |
 | 4 | POST `/api/users` ซ้ำข้อ 3 | เหมือนข้อ 3 | 400 "ข้อมูลซ้ำกับที่มีอยู่แล้ว" |
@@ -1307,10 +1320,10 @@ router.delete("/:id", async (req, res) => {
 | 7 | PUT `/api/users/(id ของ teach6)/reset-password` | - | 200 + รหัสใหม่ |
 | 8 | DELETE `/api/users/1` (ตัวเอง) | - | 400 "ลบบัญชีของตัวเองไม่ได้" |
 | 9 | POST `/api/indicators` | `{"topic_id":1,"name":"ทดสอบ","weight":0,"score_type":"scale_4","evidence_type":"none"}` | 400 "น้ำหนักต้องมากกว่า 0" |
-| 10 | PUT `/api/indicators/1` เปลี่ยน `score_type` เป็น `yes_no` | (ข้อมูลครบ ขั้น 5.5.4) | 400 "มีการให้คะแนนแล้ว…" |
-| 11 | POST `/api/assignments` | `{"committee_id":3,"evaluatee_id":9,"committee_role":"chair"}` | 400 "มีประธานกรรมการแล้ว" |
-| 12 | POST `/api/assignments` | `{"committee_id":5,"evaluatee_id":9,"committee_role":"member"}` | 400 "ไม่ใช่กรรมการ" |
-| 13 | GET `/api/users` ด้วย token ของ teach1 | - | 403 |
+| 10 | POST `/api/assignments` | `{"committee_id":3,"evaluatee_id":6,"committee_role":"chair"}` | 400 "มีประธานกรรมการแล้ว" |
+| 11 | POST `/api/assignments` | `{"committee_id":5,"evaluatee_id":6,"committee_role":"member"}` | 400 "ไม่ใช่กรรมการ" |
+| 12 | GET `/api/users` ด้วย token ของ teach1 | - | 403 |
+| 13 | DELETE `/api/users/(id ของ teach6)` | - | 200 ลบบัญชีทดสอบ |
 
 ✅ **ผ่านเมื่อ:** ครบ 13 ข้อ กด Save เข้า Collection `Eva` (หลักฐานข้อ 7.2 Insert, 7.3 Update, 7.6 ทดสอบ API)
 

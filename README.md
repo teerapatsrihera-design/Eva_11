@@ -11,6 +11,10 @@
 - Database: MySQL 8 บน Docker
 
 > 📘 **คู่มือสอนสร้างระบบนี้ตั้งแต่ 0% ถึง 100%** (สำหรับครูและนักเรียน): [docs/guide/](docs/guide/README.md)
+>
+> 📍 **แผนที่โค้ดรายเส้น API แยกตามเด็ก 3 คน:** [shared.html](docs/api-map/shared.html) (ส่วนกลาง อ่านก่อน), [person-1-hr.html](docs/api-map/person-1-hr.html), [person-2-evaluatee.html](docs/api-map/person-2-evaluatee.html), [person-3-committee.html](docs/api-map/person-3-committee.html)
+>
+> 🛠️ **เครื่องมือของครู** (สร้างเอกสารใหม่หลังแก้โค้ด และทดสอบคู่มือกับระบบจริง): [docs/tools/](docs/tools/README.md)
 
 ## สารบัญ
 - [วิธีรัน](#วิธีรัน)
@@ -131,7 +135,7 @@ cd eva
 cp .env.example .env        # Windows: copy .env.example .env  แล้วแก้รหัสผ่านและ JWT_SECRET
 docker compose up -d --build
 ```
-ตาราง + ข้อมูลตัวอย่างสร้างให้อัตโนมัติตอนรันครั้งแรก จากนั้นเปิด `http://<IP เครื่องแม่ข่าย>:3000`
+ตารางสร้างให้อัตโนมัติตอนรันครั้งแรก จากนั้นเปิด `http://<IP เครื่องแม่ข่าย>:3000` แล้วสร้างบัญชีแรกตาม[ขั้นตอนในหัวข้อฐานข้อมูล](#ฐานข้อมูล)
 
 **คำสั่งที่ใช้บ่อย**
 | ทำอะไร | คำสั่ง |
@@ -163,29 +167,30 @@ npm test
 | `tests/sort.test.js` | การเรียงข้อมูลมาก-น้อย, น้อย-มาก, ตามชื่อ, ค่าว่างไว้ท้าย | 7.5 |
 | `tests/validate.test.js` | ตรวจช่องว่าง, รูปแบบอีเมล/เบอร์โทร/URL, ความยาว, ชนิดไฟล์แนบ, ความครบถ้วนของข้อมูล | 7.4, 8.2 |
 | `tests/password.test.js` | hash รหัสผ่านด้วย `crypto.scrypt` และตรวจรหัสผ่านถูก/ผิด | 6.12 |
-| `tests/api.test.js` | Login ถูก/ผิด, 401/403/404, เพิ่ม (POST), อ่าน (GET), แก้ไข (PUT), ลบ (DELETE) ผู้ใช้ | 7.1, 7.2, 7.3, 7.6 |
+| `tests/api.test.js` | สมัครสมาชิก, Login ถูก/ผิด, 401/403/404, เพิ่ม (POST), อ่าน (GET), แก้ไข (PUT), ลบ (DELETE) ผู้ใช้ | 7.1, 7.2, 7.3, 7.6 |
 
 **หมายเหตุเรื่อง `api.test.js`**
 - เปิด app ที่ port สุ่ม จึงรันพร้อม `npm run dev` ได้
 - ข้อมูลที่เพิ่มระหว่างทดสอบจะถูกลบตอนจบ
-- ต้องใช้ข้อมูลตัวอย่างจาก `seed.sql` (บัญชี `hr` และ `teach1` รหัส `123456`)
+- สร้างบัญชีทดสอบเองผ่าน `POST /api/auth/register` จึงรันบนฐานข้อมูลว่างได้
 
 ## ฐานข้อมูล
-**การสร้างตารางและข้อมูลตัวอย่าง:** ตอนสั่ง `docker compose up` ครั้งแรก ระบบจะรัน 2 ไฟล์นี้ให้อัตโนมัติ
-- `backend/sql/schema.sql`: โครงสร้างตาราง
-- `backend/sql/seed.sql`: ข้อมูลตัวอย่าง
+**การสร้างตาราง:** ตอนสั่ง `docker compose up` ครั้งแรก ระบบจะรัน `backend/sql/schema.sql` ให้อัตโนมัติ ได้ตารางเปล่า ไม่มีข้อมูลตัวอย่าง
 
-**รีเซ็ตกลับเป็นข้อมูลตัวอย่าง** (ใช้ได้ทั้ง PowerShell และ Git Bash):
+**รีเซ็ตเป็นฐานข้อมูลว่าง** (ใช้ได้ทั้ง PowerShell และ Git Bash):
 ```
-docker exec eva_mysql sh -c 'mysql -uroot -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < /docker-entrypoint-initdb.d/schema.sql && mysql -uroot -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < /docker-entrypoint-initdb.d/seed.sql'
+docker exec eva_mysql sh -c 'mysql -uroot -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < /docker-entrypoint-initdb.d/schema.sql'
 ```
 
-**บัญชีตัวอย่าง** (รหัสผ่าน `123456` ทุกบัญชี):
-- `hr`: งานบุคลากร
-- `comm1` ถึง `comm3`: กรรมการ
-- `teach1` ถึง `teach5`: ผู้รับการประเมิน
+**สร้างบัญชี hr คนแรก**
+1. สมัครสมาชิกที่หน้า `/register` บัญชีใหม่จะเป็นผู้รับการประเมินเสมอ
+2. เปลี่ยน role ในฐานข้อมูล แก้ `your_username` ให้ตรงกับที่สมัคร (ใช้ได้ทั้ง PowerShell และ Git Bash หรือจะใช้ HeidiSQL/DBeaver ก็ได้):
+   ```
+   echo "UPDATE users SET role='hr' WHERE username='your_username'" | docker exec -i eva_mysql sh -c 'mysql -uroot -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE'
+   ```
+3. เข้าสู่ระบบใหม่ เพราะ role ถูกเก็บไว้ใน token ตอน login จากนั้น hr เพิ่มกรรมการ หัวข้อ และตัวชี้วัดผ่านหน้าเว็บได้
 
-กรรมการและผู้รับการประเมินต้องเปลี่ยนรหัสผ่านตอน login ครั้งแรก
+ผู้ใช้ที่ hr เพิ่มต้องเปลี่ยนรหัสผ่านตอน login ครั้งแรก ส่วนผู้ที่สมัครเองตั้งรหัสผ่านไว้แล้วจึงไม่ถูกบังคับ
 
 **ตารางในระบบ**
 | ตาราง | เก็บอะไร |
@@ -218,7 +223,7 @@ backend/
   middleware/       auth.js (verifyToken, requireRole), validate.js (Zod)
   schemas/          Zod schema ของข้อมูลที่รับเข้า
   utils/            response.js, password.js, score.js, upload.js, backup.js, dataCheck.js
-  sql/              schema.sql, seed.sql
+  sql/              schema.sql
   uploads/          ไฟล์หลักฐานที่อัปโหลด
   backups/          ไฟล์สำรองข้อมูล .sql
   tests/            unit test + API test
@@ -367,6 +372,7 @@ router.use(verifyToken, requireRole("hr"));
 |---|---|---|---|
 | GET | `/api/health` | ไม่ต้อง login | เช็กว่า API และฐานข้อมูลทำงาน |
 | **Auth** | | | |
+| POST | `/api/auth/register` | ไม่ต้อง login | สมัครสมาชิก (ได้บทบาทผู้รับการประเมินเสมอ) |
 | POST | `/api/auth/login` | ไม่ต้อง login | เข้าสู่ระบบ รับ JWT token |
 | PUT | `/api/auth/change-password` | ทุกบทบาท | เปลี่ยนรหัสผ่านของตัวเอง |
 | **Profile** | | | |
@@ -443,6 +449,39 @@ router.use(verifyToken, requireRole("hr"));
   ```
 
 ### Auth
+
+#### POST /api/auth/register
+สมัครสมาชิก (ไม่ต้องใช้ token) บัญชีใหม่เป็น `evaluatee` เสมอ ถึงส่ง `role` มาก็ไม่มีผล และไม่ถูกบังคับเปลี่ยนรหัสผ่าน
+
+**Body (JSON)**
+| ช่อง | ชนิด | คำอธิบาย |
+|---|---|---|
+| `username`* | string | 3-50 ตัว ใช้ได้เฉพาะ a-z, 0-9, _ และ . |
+| `password`* | string | 6-50 ตัว |
+| `full_name`* | string | ไม่เกิน 100 ตัว |
+| `email` | string | รูปแบบอีเมล ไม่ซ้ำกับผู้อื่น |
+| `phone` | string | ตัวเลข 9-10 หลัก ขึ้นต้นด้วย 0 |
+| `position` | string | ไม่เกิน 100 ตัว |
+| `department` | string | ไม่เกิน 100 ตัว |
+
+**ตัวอย่าง Body**
+```json
+{ "username": "teach_a", "password": "123456", "full_name": "สมชาย รักเรียน", "department": "แผนกเทคโนโลยีสารสนเทศ" }
+```
+
+**Responses**
+- **201**
+  ```json
+  { "status": "success", "message": "สมัครสมาชิกสำเร็จ", "data": { "id": 2, "username": "teach_a" } }
+  ```
+- **400** ข้อมูลไม่ถูกต้อง:
+  ```json
+  { "status": "error", "message": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร", "data": [{ "field": "password", "message": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }] }
+  ```
+- **400** ชื่อผู้ใช้หรืออีเมลซ้ำ:
+  ```json
+  { "status": "error", "message": "ข้อมูลซ้ำกับที่มีอยู่แล้ว", "data": null }
+  ```
 
 #### POST /api/auth/login
 เข้าสู่ระบบ (ไม่ต้องใช้ token)

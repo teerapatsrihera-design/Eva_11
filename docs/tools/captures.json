@@ -1,0 +1,1204 @@
+{
+  "GET /api/health": {
+    "method": "GET",
+    "url": "/health",
+    "status": 200,
+    "auth": false,
+    "response": {
+      "status": "success",
+      "message": "API พร้อมใช้งาน",
+      "data": {
+        "db": 1
+      }
+    }
+  },
+  "POST /api/auth/register": {
+    "method": "POST",
+    "url": "/auth/register",
+    "status": 201,
+    "auth": false,
+    "body": {
+      "username": "hr_admin",
+      "password": "123456",
+      "full_name": "สมศรี ใจดี",
+      "email": "hr@school.ac.th",
+      "phone": "0810000001",
+      "position": "เจ้าหน้าที่งานบุคลากร",
+      "department": "งานบุคลากร"
+    },
+    "response": {
+      "status": "success",
+      "message": "สมัครสมาชิกสำเร็จ",
+      "data": {
+        "id": 1,
+        "username": "hr_admin"
+      }
+    }
+  },
+  "POST /api/auth/login": {
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "auth": false,
+    "body": {
+      "username": "hr_admin",
+      "password": "123456"
+    },
+    "response": {
+      "status": "success",
+      "message": "เข้าสู่ระบบสำเร็จ",
+      "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImhyIiwiZnVsbF9uYW1lIjoi4Liq4Lih4Lio4Lij4Li1IOC5g-C4iOC4lOC4tSIsImlhdCI6MTc5NDIzODQ4MywiZXhwIjoxNzk0MjY3MjgzfQ.cAuJFruXFE7i_s0w6Iu4f5B-qI4glUvrfNbTqwzk4eQ",
+        "user": {
+          "id": 1,
+          "username": "hr_admin",
+          "full_name": "สมศรี ใจดี",
+          "role": "hr",
+          "must_change_password": false
+        }
+      }
+    }
+  },
+  "POST /api/users": {
+    "method": "POST",
+    "url": "/users",
+    "status": 201,
+    "auth": true,
+    "body": {
+      "username": "comm_a",
+      "full_name": "ประเสริฐ วงศ์ดี",
+      "email": "comm@school.ac.th",
+      "phone": "0810000002",
+      "position": "รองผู้อำนวยการ",
+      "department": "ฝ่ายวิชาการ",
+      "role": "committee"
+    },
+    "response": {
+      "status": "success",
+      "message": "เพิ่มผู้ใช้สำเร็จ",
+      "data": {
+        "id": 3,
+        "username": "comm_a",
+        "temp_password": "485218"
+      }
+    }
+  },
+  "PUT /api/auth/change-password": {
+    "method": "PUT",
+    "url": "/auth/change-password",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "old_password": "485218",
+      "new_password": "newpass1"
+    },
+    "response": {
+      "status": "success",
+      "message": "เปลี่ยนรหัสผ่านสำเร็จ",
+      "data": null
+    }
+  },
+  "GET /api/users": {
+    "method": "GET",
+    "url": "/users?role=committee&q=%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%AA%E0%B8%A3%E0%B8%B4%E0%B8%90",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": [
+        {
+          "id": 3,
+          "username": "comm_a",
+          "full_name": "ประเสริฐ วงศ์ดี",
+          "email": "comm@school.ac.th",
+          "phone": "0810000002",
+          "position": "รองผู้อำนวยการ",
+          "department": "ฝ่ายวิชาการ",
+          "role": "committee",
+          "must_change_password": 0,
+          "created_at": "2026-11-09 22:34:43"
+        }
+      ]
+    }
+  },
+  "GET /api/users/{id}": {
+    "method": "GET",
+    "url": "/users/3",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "id": 3,
+        "username": "comm_a",
+        "full_name": "ประเสริฐ วงศ์ดี",
+        "email": "comm@school.ac.th",
+        "phone": "0810000002",
+        "position": "รองผู้อำนวยการ",
+        "department": "ฝ่ายวิชาการ",
+        "role": "committee",
+        "must_change_password": 0,
+        "created_at": "2026-11-09 22:34:43"
+      }
+    }
+  },
+  "PUT /api/users/{id}": {
+    "method": "PUT",
+    "url": "/users/3",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "username": "comm_a",
+      "full_name": "ประเสริฐ วงศ์ดี",
+      "email": "comm@school.ac.th",
+      "phone": "0810000002",
+      "position": "รองผู้อำนวยการฝ่ายวิชาการ",
+      "department": "ฝ่ายวิชาการ"
+    },
+    "response": {
+      "status": "success",
+      "message": "แก้ไขผู้ใช้สำเร็จ",
+      "data": null
+    }
+  },
+  "POST /api/users/import": {
+    "method": "POST",
+    "url": "/users/import",
+    "status": 201,
+    "auth": true,
+    "body": "form-data",
+    "response": {
+      "status": "success",
+      "message": "นำเข้าผู้ใช้สำเร็จ 2 คน",
+      "data": [
+        {
+          "username": "imp_a",
+          "full_name": "นำเข้า หนึ่ง",
+          "temp_password": "432894"
+        },
+        {
+          "username": "imp_b",
+          "full_name": "นำเข้า สอง",
+          "temp_password": "267147"
+        }
+      ]
+    }
+  },
+  "PUT /api/users/{id}/reset-password": {
+    "method": "PUT",
+    "url": "/users/4/reset-password",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "รีเซ็ตรหัสผ่านสำเร็จ",
+      "data": {
+        "temp_password": "537147"
+      }
+    }
+  },
+  "DELETE /api/users/{id}": {
+    "method": "DELETE",
+    "url": "/users/4",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "ลบผู้ใช้สำเร็จ",
+      "data": null
+    }
+  },
+  "POST /api/topics": {
+    "method": "POST",
+    "url": "/topics",
+    "status": 201,
+    "auth": true,
+    "body": {
+      "title": "ด้านการจัดการเรียนการสอน",
+      "description": "ประเมินการวางแผนและการจัดการเรียนรู้",
+      "start_date": "2026-11-01",
+      "end_date": "2026-12-31"
+    },
+    "response": {
+      "status": "success",
+      "message": "เพิ่มหัวข้อสำเร็จ",
+      "data": {
+        "id": 1
+      }
+    }
+  },
+  "PUT /api/topics/{id}": {
+    "method": "PUT",
+    "url": "/topics/1",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "title": "ด้านการจัดการเรียนการสอน",
+      "description": "ประเมินการวางแผนและการจัดการเรียนรู้",
+      "start_date": "2026-11-01",
+      "end_date": "2026-12-31"
+    },
+    "response": {
+      "status": "success",
+      "message": "แก้ไขหัวข้อสำเร็จ",
+      "data": null
+    }
+  },
+  "DELETE /api/topics/{id}": {
+    "method": "DELETE",
+    "url": "/topics/2",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "ลบหัวข้อสำเร็จ",
+      "data": null
+    }
+  },
+  "POST /api/indicators": {
+    "method": "POST",
+    "url": "/indicators",
+    "status": 201,
+    "auth": true,
+    "body": {
+      "topic_id": 1,
+      "name": "การจัดทำแผนการจัดการเรียนรู้",
+      "description": "มีแผนครบทุกรายวิชา",
+      "weight": 60,
+      "score_type": "scale_4",
+      "evidence_type": "any",
+      "evidence_note": "ไฟล์ PDF แผนการสอน"
+    },
+    "response": {
+      "status": "success",
+      "message": "เพิ่มตัวชี้วัดสำเร็จ",
+      "data": {
+        "id": 1
+      }
+    }
+  },
+  "GET /api/indicators": {
+    "method": "GET",
+    "url": "/indicators?topic_id=1",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": [
+        {
+          "id": 1,
+          "topic_id": 1,
+          "name": "การจัดทำแผนการจัดการเรียนรู้",
+          "description": "มีแผนครบทุกรายวิชา",
+          "weight": 60,
+          "score_type": "scale_4",
+          "evidence_type": "any",
+          "evidence_note": "ไฟล์ PDF แผนการสอน",
+          "created_at": "2026-11-09 22:34:44"
+        },
+        {
+          "id": 2,
+          "topic_id": 1,
+          "name": "การทำวิจัยในชั้นเรียน",
+          "description": null,
+          "weight": 40,
+          "score_type": "yes_no",
+          "evidence_type": "none",
+          "evidence_note": null,
+          "created_at": "2026-11-09 22:34:44"
+        },
+        {
+          "id": 3,
+          "topic_id": 1,
+          "name": "ตัวชี้วัดที่จะลบ",
+          "description": null,
+          "weight": 1,
+          "score_type": "yes_no",
+          "evidence_type": "none",
+          "evidence_note": null,
+          "created_at": "2026-11-09 22:34:44"
+        }
+      ]
+    }
+  },
+  "GET /api/indicators/{id}": {
+    "method": "GET",
+    "url": "/indicators/1",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "id": 1,
+        "topic_id": 1,
+        "name": "การจัดทำแผนการจัดการเรียนรู้",
+        "description": "มีแผนครบทุกรายวิชา",
+        "weight": 60,
+        "score_type": "scale_4",
+        "evidence_type": "any",
+        "evidence_note": "ไฟล์ PDF แผนการสอน",
+        "created_at": "2026-11-09 22:34:44"
+      }
+    }
+  },
+  "PUT /api/indicators/{id}": {
+    "method": "PUT",
+    "url": "/indicators/1",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "topic_id": 1,
+      "name": "การจัดทำแผนการจัดการเรียนรู้",
+      "description": "มีแผนครบทุกรายวิชาที่สอน",
+      "weight": 60,
+      "score_type": "scale_4",
+      "evidence_type": "any",
+      "evidence_note": "ไฟล์ PDF แผนการสอน"
+    },
+    "response": {
+      "status": "success",
+      "message": "แก้ไขตัวชี้วัดสำเร็จ",
+      "data": null
+    }
+  },
+  "DELETE /api/indicators/{id}": {
+    "method": "DELETE",
+    "url": "/indicators/3",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "ลบตัวชี้วัดสำเร็จ",
+      "data": null
+    }
+  },
+  "GET /api/topics": {
+    "method": "GET",
+    "url": "/topics",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": [
+        {
+          "id": 1,
+          "title": "ด้านการจัดการเรียนการสอน",
+          "description": "ประเมินการวางแผนและการจัดการเรียนรู้",
+          "start_date": "2026-11-01",
+          "end_date": "2026-12-31",
+          "created_at": "2026-11-09 22:34:44",
+          "is_open": 1,
+          "indicators": [
+            {
+              "id": 1,
+              "topic_id": 1,
+              "name": "การจัดทำแผนการจัดการเรียนรู้",
+              "description": "มีแผนครบทุกรายวิชาที่สอน",
+              "weight": 60,
+              "score_type": "scale_4",
+              "evidence_type": "any",
+              "evidence_note": "ไฟล์ PDF แผนการสอน",
+              "created_at": "2026-11-09 22:34:44"
+            },
+            {
+              "id": 2,
+              "topic_id": 1,
+              "name": "การทำวิจัยในชั้นเรียน",
+              "description": null,
+              "weight": 40,
+              "score_type": "yes_no",
+              "evidence_type": "none",
+              "evidence_note": null,
+              "created_at": "2026-11-09 22:34:44"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "GET /api/topics/{id}": {
+    "method": "GET",
+    "url": "/topics/1",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "id": 1,
+        "title": "ด้านการจัดการเรียนการสอน",
+        "description": "ประเมินการวางแผนและการจัดการเรียนรู้",
+        "start_date": "2026-11-01",
+        "end_date": "2026-12-31",
+        "created_at": "2026-11-09 22:34:44",
+        "is_open": 1,
+        "indicators": [
+          {
+            "id": 1,
+            "topic_id": 1,
+            "name": "การจัดทำแผนการจัดการเรียนรู้",
+            "description": "มีแผนครบทุกรายวิชาที่สอน",
+            "weight": 60,
+            "score_type": "scale_4",
+            "evidence_type": "any",
+            "evidence_note": "ไฟล์ PDF แผนการสอน",
+            "created_at": "2026-11-09 22:34:44"
+          },
+          {
+            "id": 2,
+            "topic_id": 1,
+            "name": "การทำวิจัยในชั้นเรียน",
+            "description": null,
+            "weight": 40,
+            "score_type": "yes_no",
+            "evidence_type": "none",
+            "evidence_note": null,
+            "created_at": "2026-11-09 22:34:44"
+          }
+        ]
+      }
+    }
+  },
+  "POST /api/assignments": {
+    "method": "POST",
+    "url": "/assignments",
+    "status": 201,
+    "auth": true,
+    "body": {
+      "committee_id": 3,
+      "evaluatee_id": 2,
+      "committee_role": "member"
+    },
+    "response": {
+      "status": "success",
+      "message": "มอบหมายกรรมการสำเร็จ",
+      "data": {
+        "id": 1
+      }
+    }
+  },
+  "PUT /api/assignments/{id}": {
+    "method": "PUT",
+    "url": "/assignments/1",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "committee_role": "chair"
+    },
+    "response": {
+      "status": "success",
+      "message": "เปลี่ยนบทบาทกรรมการสำเร็จ",
+      "data": null
+    }
+  },
+  "GET /api/assignments": {
+    "method": "GET",
+    "url": "/assignments?evaluatee_id=2",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": [
+        {
+          "id": 1,
+          "committee_id": 3,
+          "evaluatee_id": 2,
+          "committee_role": "chair",
+          "status": "pending",
+          "confirmed_at": null,
+          "committee_name": "ประเสริฐ วงศ์ดี",
+          "evaluatee_name": "สมชาย รักเรียน",
+          "scored_count": 0
+        },
+        {
+          "id": 2,
+          "committee_id": 6,
+          "evaluatee_id": 2,
+          "committee_role": "member",
+          "status": "pending",
+          "confirmed_at": null,
+          "committee_name": "วิไล สายทอง",
+          "evaluatee_name": "สมชาย รักเรียน",
+          "scored_count": 0
+        }
+      ]
+    }
+  },
+  "DELETE /api/assignments/{id}": {
+    "method": "DELETE",
+    "url": "/assignments/2",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "ยกเลิกการมอบหมายสำเร็จ",
+      "data": null
+    }
+  },
+  "GET /api/profile": {
+    "method": "GET",
+    "url": "/profile",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "id": 2,
+        "username": "teach_a",
+        "full_name": "สมชาย รักเรียน",
+        "email": null,
+        "phone": null,
+        "position": null,
+        "department": "แผนกเทคโนโลยีสารสนเทศ",
+        "role": "evaluatee",
+        "must_change_password": 0
+      }
+    }
+  },
+  "PUT /api/profile": {
+    "method": "PUT",
+    "url": "/profile",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "full_name": "สมชาย รักเรียน",
+      "email": "teach@school.ac.th",
+      "phone": "0810000005",
+      "position": "ครู",
+      "department": "แผนกเทคโนโลยีสารสนเทศ"
+    },
+    "response": {
+      "status": "success",
+      "message": "บันทึกข้อมูลส่วนตัวสำเร็จ",
+      "data": null
+    }
+  },
+  "PUT /api/self-evaluations/{indicatorId}": {
+    "method": "PUT",
+    "url": "/self-evaluations/1",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "score": 4
+    },
+    "response": {
+      "status": "success",
+      "message": "บันทึกคะแนนสำเร็จ",
+      "data": null
+    }
+  },
+  "POST /api/self-evaluations/{indicatorId}/evidences": {
+    "method": "POST",
+    "url": "/self-evaluations/1/evidences",
+    "status": 201,
+    "auth": true,
+    "body": "form-data",
+    "response": {
+      "status": "success",
+      "message": "เพิ่มรายละเอียดประกอบสำเร็จ",
+      "data": {
+        "id": 1
+      }
+    }
+  },
+  "GET /api/self-evaluations": {
+    "method": "GET",
+    "url": "/self-evaluations",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "topics": [
+          {
+            "id": 1,
+            "title": "ด้านการจัดการเรียนการสอน",
+            "description": "ประเมินการวางแผนและการจัดการเรียนรู้",
+            "start_date": "2026-11-01",
+            "end_date": "2026-12-31",
+            "created_at": "2026-11-09 22:34:44",
+            "is_open": 1,
+            "indicators": [
+              {
+                "id": 1,
+                "topic_id": 1,
+                "name": "การจัดทำแผนการจัดการเรียนรู้",
+                "description": "มีแผนครบทุกรายวิชาที่สอน",
+                "weight": 60,
+                "score_type": "scale_4",
+                "evidence_type": "any",
+                "evidence_note": "ไฟล์ PDF แผนการสอน",
+                "created_at": "2026-11-09 22:34:44",
+                "score": 4,
+                "evidences": [
+                  {
+                    "id": 1,
+                    "self_evaluation_id": 1,
+                    "description": "แผนการจัดการเรียนรู้วิชาการเขียนโปรแกรมเว็บ",
+                    "file_path": "1794238484454-5080742ef9b2.pdf",
+                    "file_name": "plan.pdf",
+                    "url": null,
+                    "created_at": "2026-11-09 22:34:44"
+                  },
+                  {
+                    "id": 2,
+                    "self_evaluation_id": 1,
+                    "description": "ลิงก์สื่อการสอน",
+                    "file_path": null,
+                    "file_name": null,
+                    "url": "https://example.com/plan",
+                    "created_at": "2026-11-09 22:34:44"
+                  }
+                ],
+                "progress": 100
+              },
+              {
+                "id": 2,
+                "topic_id": 1,
+                "name": "การทำวิจัยในชั้นเรียน",
+                "description": null,
+                "weight": 40,
+                "score_type": "yes_no",
+                "evidence_type": "none",
+                "evidence_note": null,
+                "created_at": "2026-11-09 22:34:44",
+                "score": 1,
+                "evidences": [],
+                "progress": 100
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "indicator_count": 2,
+          "filled": 2,
+          "progress": 100
+        }
+      }
+    }
+  },
+  "GET /api/evidences/{id}/file": {
+    "method": "GET",
+    "url": "/evidences/1/file",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "binary": true,
+      "contentType": "application/pdf",
+      "bytes": 45
+    }
+  },
+  "DELETE /api/evidences/{id}": {
+    "method": "DELETE",
+    "url": "/evidences/2",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "ลบรายละเอียดประกอบสำเร็จ",
+      "data": null
+    }
+  },
+  "GET /api/committee/assignments": {
+    "method": "GET",
+    "url": "/committee/assignments",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": [
+        {
+          "id": 1,
+          "evaluatee_id": 2,
+          "committee_role": "chair",
+          "status": "pending",
+          "confirmed_at": null,
+          "full_name": "สมชาย รักเรียน",
+          "position": "ครู",
+          "department": "แผนกเทคโนโลยีสารสนเทศ",
+          "scored_count": 0,
+          "self_count": 2,
+          "indicator_count": 2
+        }
+      ]
+    }
+  },
+  "PUT /api/committee/assignments/{id}/scores": {
+    "method": "PUT",
+    "url": "/committee/assignments/1/scores",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "scores": [
+        {
+          "indicator_id": 1,
+          "score": 3
+        },
+        {
+          "indicator_id": 2,
+          "score": 1
+        }
+      ],
+      "summary_comment": "ปฏิบัติงานได้ดี มีหลักฐานครบถ้วน"
+    },
+    "response": {
+      "status": "success",
+      "message": "บันทึกร่างสำเร็จ",
+      "data": null
+    }
+  },
+  "GET /api/committee/assignments/{id}": {
+    "method": "GET",
+    "url": "/committee/assignments/1",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "assignment": {
+          "id": 1,
+          "committee_id": 3,
+          "evaluatee_id": 2,
+          "committee_role": "chair",
+          "status": "draft",
+          "summary_comment": "ปฏิบัติงานได้ดี มีหลักฐานครบถ้วน",
+          "signature": null,
+          "confirmed_at": null,
+          "created_at": "2026-11-09 22:34:44"
+        },
+        "evaluatee": {
+          "id": 2,
+          "full_name": "สมชาย รักเรียน",
+          "email": "teach@school.ac.th",
+          "phone": "0810000005",
+          "position": "ครู",
+          "department": "แผนกเทคโนโลยีสารสนเทศ"
+        },
+        "topics": [
+          {
+            "id": 1,
+            "title": "ด้านการจัดการเรียนการสอน",
+            "description": "ประเมินการวางแผนและการจัดการเรียนรู้",
+            "start_date": "2026-11-01",
+            "end_date": "2026-12-31",
+            "indicators": [
+              {
+                "id": 1,
+                "topic_id": 1,
+                "name": "การจัดทำแผนการจัดการเรียนรู้",
+                "description": "มีแผนครบทุกรายวิชาที่สอน",
+                "weight": 60,
+                "score_type": "scale_4",
+                "evidence_type": "any",
+                "evidence_note": "ไฟล์ PDF แผนการสอน",
+                "created_at": "2026-11-09 22:34:44",
+                "self_score": 4,
+                "evidences": [
+                  {
+                    "id": 1,
+                    "self_evaluation_id": 1,
+                    "description": "แผนการจัดการเรียนรู้วิชาการเขียนโปรแกรมเว็บ",
+                    "file_name": "plan.pdf",
+                    "url": null
+                  }
+                ],
+                "score": 3,
+                "weighted_score": 45
+              },
+              {
+                "id": 2,
+                "topic_id": 1,
+                "name": "การทำวิจัยในชั้นเรียน",
+                "description": null,
+                "weight": 40,
+                "score_type": "yes_no",
+                "evidence_type": "none",
+                "evidence_note": null,
+                "created_at": "2026-11-09 22:34:44",
+                "self_score": 1,
+                "evidences": [],
+                "score": 1,
+                "weighted_score": 40
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "indicator_count": 2,
+          "scored": 2,
+          "total": 85,
+          "total_weight": 100,
+          "percent": 85
+        }
+      }
+    }
+  },
+  "PUT /api/committee/assignments/{id}/confirm": {
+    "method": "PUT",
+    "url": "/committee/assignments/1/confirm",
+    "status": 200,
+    "auth": true,
+    "body": {
+      "signature": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+    },
+    "response": {
+      "status": "success",
+      "message": "ยืนยันและส่งผลการประเมินสำเร็จ",
+      "data": null
+    }
+  },
+  "GET /api/reports/overview": {
+    "method": "GET",
+    "url": "/reports/overview",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "counts": {
+          "evaluatees": 1,
+          "committees": 2,
+          "topics": 1,
+          "open_topics": 1,
+          "indicators": 2
+        },
+        "assignments": {
+          "total": 1,
+          "pending": 0,
+          "draft": 0,
+          "confirmed": 1
+        },
+        "progress": {
+          "average": 100,
+          "completed": 1,
+          "fully_evaluated": 1
+        },
+        "scores": {
+          "evaluated": 1,
+          "average": 85,
+          "max": 85,
+          "min": 85
+        },
+        "topics": [
+          {
+            "id": 1,
+            "title": "ด้านการจัดการเรียนการสอน",
+            "is_open": 1,
+            "indicator_count": 2,
+            "total_weight": 100,
+            "avg_percent": 85
+          }
+        ],
+        "ranking": [
+          {
+            "id": 2,
+            "full_name": "สมชาย รักเรียน",
+            "total_weight": 100,
+            "indicator_count": 2,
+            "filled": 2,
+            "progress": 100,
+            "self_total": 100,
+            "committee_count": 1,
+            "confirmed_count": 1,
+            "committee_total": 85,
+            "committee_percent": 85
+          }
+        ],
+        "issues": []
+      }
+    }
+  },
+  "GET /api/reports/evaluatees": {
+    "method": "GET",
+    "url": "/reports/evaluatees?sort=score",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": [
+        {
+          "id": 2,
+          "username": "teach_a",
+          "full_name": "สมชาย รักเรียน",
+          "position": "ครู",
+          "department": "แผนกเทคโนโลยีสารสนเทศ",
+          "total_weight": 100,
+          "indicator_count": 2,
+          "filled": 2,
+          "progress": 100,
+          "self_total": 100,
+          "committee_count": 1,
+          "confirmed_count": 1,
+          "committee_total": 85,
+          "committee_percent": 85
+        }
+      ]
+    }
+  },
+  "GET /api/reports/evaluatees/{id}": {
+    "method": "GET",
+    "url": "/reports/evaluatees/2",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "evaluatee": {
+          "id": 2,
+          "username": "teach_a",
+          "full_name": "สมชาย รักเรียน",
+          "email": "teach@school.ac.th",
+          "phone": "0810000005",
+          "position": "ครู",
+          "department": "แผนกเทคโนโลยีสารสนเทศ"
+        },
+        "assignments": [
+          {
+            "id": 1,
+            "committee_id": 3,
+            "evaluatee_id": 2,
+            "committee_role": "chair",
+            "status": "confirmed",
+            "summary_comment": "ปฏิบัติงานได้ดี มีหลักฐานครบถ้วน",
+            "signature": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+            "confirmed_at": "2026-11-09 22:34:44",
+            "created_at": "2026-11-09 22:34:44",
+            "committee_name": "ประเสริฐ วงศ์ดี",
+            "committee_position": "รองผู้อำนวยการฝ่ายวิชาการ"
+          }
+        ],
+        "rows": [
+          {
+            "id": 1,
+            "topic_id": 1,
+            "topic_title": "ด้านการจัดการเรียนการสอน",
+            "name": "การจัดทำแผนการจัดการเรียนรู้",
+            "description": "มีแผนครบทุกรายวิชาที่สอน",
+            "weight": 60,
+            "score_type": "scale_4",
+            "evidence_type": "any",
+            "self_score": 4,
+            "evidence_count": 1,
+            "progress": 100,
+            "scores": {
+              "1": 3
+            },
+            "avg_score": 3,
+            "self_weighted": 60,
+            "committee_weighted": 45
+          },
+          {
+            "id": 2,
+            "topic_id": 1,
+            "topic_title": "ด้านการจัดการเรียนการสอน",
+            "name": "การทำวิจัยในชั้นเรียน",
+            "description": null,
+            "weight": 40,
+            "score_type": "yes_no",
+            "evidence_type": "none",
+            "self_score": 1,
+            "evidence_count": 0,
+            "progress": 100,
+            "scores": {
+              "1": 1
+            },
+            "avg_score": 1,
+            "self_weighted": 40,
+            "committee_weighted": 40
+          }
+        ],
+        "summary": {
+          "total_weight": 100,
+          "indicator_count": 2,
+          "filled": 2,
+          "progress": 100,
+          "self_total": 100,
+          "committee_count": 1,
+          "confirmed_count": 1,
+          "committee_total": 85,
+          "committee_percent": 85
+        }
+      }
+    }
+  },
+  "GET /api/reports/committees": {
+    "method": "GET",
+    "url": "/reports/committees",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": [
+        {
+          "id": 3,
+          "full_name": "ประเสริฐ วงศ์ดี",
+          "position": "รองผู้อำนวยการฝ่ายวิชาการ",
+          "department": "ฝ่ายวิชาการ",
+          "total": 1,
+          "pending": 0,
+          "draft": 0,
+          "confirmed": 1
+        },
+        {
+          "id": 6,
+          "full_name": "วิไล สายทอง",
+          "position": null,
+          "department": null,
+          "total": 0,
+          "pending": 0,
+          "draft": 0,
+          "confirmed": 0
+        }
+      ]
+    }
+  },
+  "GET /api/reports/committees/{id}": {
+    "method": "GET",
+    "url": "/reports/committees/3",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": {
+        "committee": {
+          "id": 3,
+          "full_name": "ประเสริฐ วงศ์ดี",
+          "position": "รองผู้อำนวยการฝ่ายวิชาการ",
+          "department": "ฝ่ายวิชาการ"
+        },
+        "indicators": [
+          {
+            "id": 1,
+            "topic_id": 1,
+            "topic_title": "ด้านการจัดการเรียนการสอน",
+            "name": "การจัดทำแผนการจัดการเรียนรู้",
+            "description": "มีแผนครบทุกรายวิชาที่สอน",
+            "weight": 60,
+            "score_type": "scale_4",
+            "evidence_type": "any"
+          },
+          {
+            "id": 2,
+            "topic_id": 1,
+            "topic_title": "ด้านการจัดการเรียนการสอน",
+            "name": "การทำวิจัยในชั้นเรียน",
+            "description": null,
+            "weight": 40,
+            "score_type": "yes_no",
+            "evidence_type": "none"
+          }
+        ],
+        "rows": [
+          {
+            "id": 1,
+            "evaluatee_id": 2,
+            "committee_role": "chair",
+            "status": "confirmed",
+            "summary_comment": "ปฏิบัติงานได้ดี มีหลักฐานครบถ้วน",
+            "confirmed_at": "2026-11-09 22:34:44",
+            "evaluatee_name": "สมชาย รักเรียน",
+            "scores": {
+              "1": 3,
+              "2": 1
+            },
+            "total": 85
+          }
+        ]
+      }
+    }
+  },
+  "POST /api/backups": {
+    "method": "POST",
+    "url": "/backups",
+    "status": 201,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำรองข้อมูลสำเร็จ",
+      "data": {
+        "name": "backup-2026-11-09-22-34-44.sql"
+      }
+    }
+  },
+  "GET /api/backups": {
+    "method": "GET",
+    "url": "/backups",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "สำเร็จ",
+      "data": [
+        {
+          "name": "backup-2026-11-09-22-34-44.sql",
+          "size": 12952,
+          "created_at": "2026-11-09T15:34:44.760Z"
+        }
+      ]
+    }
+  },
+  "GET /api/backups/{name}/download": {
+    "method": "GET",
+    "url": "/backups/backup-2026-11-09-22-34-44.sql/download",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "binary": true,
+      "contentType": "application/sql",
+      "bytes": 12952
+    }
+  },
+  "POST /api/backups/{name}/restore": {
+    "method": "POST",
+    "url": "/backups/backup-2026-11-09-22-34-44.sql/restore",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "กู้คืนข้อมูลสำเร็จ (ข้อมูลก่อนกู้คืนถูกเก็บไว้ที่ backup-2026-11-09-22-34-44-before-restore.sql)",
+      "data": {
+        "before": "backup-2026-11-09-22-34-44-before-restore.sql"
+      }
+    }
+  },
+  "POST /api/backups/restore": {
+    "method": "POST",
+    "url": "/backups/restore",
+    "status": 200,
+    "auth": true,
+    "body": "form-data",
+    "response": {
+      "status": "success",
+      "message": "กู้คืนข้อมูลสำเร็จ (ข้อมูลก่อนกู้คืนถูกเก็บไว้ที่ backup-2026-11-09-22-34-45-before-restore.sql)",
+      "data": {
+        "before": "backup-2026-11-09-22-34-45-before-restore.sql"
+      }
+    }
+  },
+  "DELETE /api/backups/{name}": {
+    "method": "DELETE",
+    "url": "/backups/backup-2026-11-09-22-34-44.sql",
+    "status": 200,
+    "auth": true,
+    "response": {
+      "status": "success",
+      "message": "ลบไฟล์สำรองสำเร็จ",
+      "data": null
+    }
+  }
+}

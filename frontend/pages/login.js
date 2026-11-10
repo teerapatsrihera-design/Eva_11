@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import api, { errorMessage } from "@/lib/api";
 import { saveAuth, homePath, goTo } from "@/lib/auth";
@@ -39,6 +40,9 @@ export default function Login() {
           <button className="btn btn-primary mt-2" disabled={isSubmitting}>
             เข้าสู่ระบบ
           </button>
+          <Link href="/register" className="link text-sm text-center">
+            ยังไม่มีบัญชี? สมัครสมาชิก
+          </Link>
         </div>
       </form>
     </main>

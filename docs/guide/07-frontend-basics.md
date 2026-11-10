@@ -18,7 +18,7 @@
 | ภาค | ทำอะไร | จำนวนขั้น |
 |---|---|---|
 | ภาค ก (7.1-7.3) | React, Next.js, Tailwind เท่าที่ต้องใช้ (ตัวอย่างสั้นๆ ยังไม่แตะโปรเจกต์) | 8 ขั้น |
-| ภาค ข (7.4-7.14) | สร้างไฟล์กลางและหน้าแรกๆ ของระบบ | 24 ขั้น |
+| ภาค ข (7.4-7.15) | สร้างไฟล์กลางและหน้าแรกๆ ของระบบ | 25 ขั้น |
 
 ### ไฟล์ที่จะสร้าง/แก้ในบทนี้
 
@@ -39,6 +39,7 @@ frontend/
 │   └── Layout.js             ← ขั้น 7.12 แถบเมนู
 └── pages/
     ├── login.js              ← ขั้น 7.9
+    ├── register.js           ← ขั้น 7.15
     ├── index.js              ← ขั้น 7.10 (แก้) ส่งต่อตามบทบาท
     ├── change-password.js    ← ขั้น 7.13
     └── profile.js            ← ขั้น 7.14
@@ -995,7 +996,7 @@ saveAuth(token, user) → ไปหน้าเปลี่ยนรหัส �
 
 ✅ **ลองเลย:** เปิด http://localhost:3000/login
 1. กรอกรหัสผิด → กล่องแดง "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"
-2. กรอก `hr` / `123456` → ไปที่ `/hr` (ยังไม่มีหน้า เห็น 404 ไม่เป็นไร บท 08 จะสร้าง)
+2. กรอก `hr1` / `123456` → ไปที่ `/hr` (ยังไม่มีหน้า เห็น 404 ไม่เป็นไร บท 08 จะสร้าง)
 3. F12 → Application → Local Storage ต้องเห็น `token` และ `user`
 
 <details>
@@ -1373,13 +1374,16 @@ export default function ChangePassword() {
 > 🧩 syntax สอนไปแล้ว: `{ ...user, must_change_password: false }` (กระจาย object บท 03 ขั้น 3.10.5) และแกะ object ในพารามิเตอร์ (ขั้น 7.11.2)
 
 ✅ **ลองเลย:**
-1. login เป็น **teach1** / `123456` → ถูกพามาหน้านี้อัตโนมัติ พร้อมกล่องเหลือง และเห็นแถบเมนูด้านบน
+0. ใช้ Thunder Client (token ของ hr) POST `/api/users` body `{ "username": "teach7", "full_name": "ครูทดสอบ", "role": "evaluatee" }` จดค่า `temp_password` ไว้ (บัญชีที่ hr เพิ่มจะถูกบังคับเปลี่ยนรหัส)
+1. login เป็น **teach7** ด้วยรหัสชั่วคราว → ถูกพามาหน้านี้อัตโนมัติ พร้อมกล่องเหลือง และเห็นแถบเมนูด้านบน
 2. ลองพิมพ์ URL `/evaluatee` เอง → ถูกพากลับมาหน้านี้
 3. กรอกรหัสยืนยันไม่ตรง → "ยืนยันรหัสผ่านไม่ตรงกัน" ใต้ช่อง
 4. กรอกรหัสเดิมผิด → กล่องแดง "รหัสผ่านเดิมไม่ถูกต้อง" (จาก backend)
 5. ย่อจอเป็นมือถือ เมนูต้องเปลี่ยนเป็นปุ่ม ☰
 
-> 💡 ถ้าเปลี่ยนรหัสจริงไปแล้ว รีเซ็ตฐานข้อมูลได้ (บท 02 ขั้น 2.6.1) แล้ว logout และ login ใหม่
+6. เปลี่ยนรหัสจริงให้สำเร็จ → ไปหน้าของบทบาท และไม่ถูกบังคับอีก
+
+> 💡 ทดสอบเสร็จแล้ว logout และใช้ token ของ hr DELETE `/api/users/(id ของ teach7)`
 
 ## 7.14 หน้าข้อมูลส่วนตัว
 
@@ -1543,6 +1547,7 @@ export default function Profile() {
 1. ช่องกรอกมีข้อมูลเดิมของ "สมศรี ใจดี"
 2. แก้เบอร์เป็น `123` → "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก…" ใต้ช่อง (ฝั่งหน้าจับได้ ไม่ยิง API)
 3. แก้ชื่อ แล้วบันทึก → กล่องเขียว "บันทึกข้อมูลส่วนตัวสำเร็จ"
+4. แก้ชื่อกลับเป็น `สมศรี ใจดี` แล้วบันทึกอีกครั้ง (บทต่อไปใช้ชื่อนี้)
 
 ### ขั้นที่ 7.14.4 ทดสอบตอน backend ล่ม
 
@@ -1586,6 +1591,138 @@ if (!data) return <Layout user={user}>{error && <div className="alert alert-erro
 ไฟล์จริงในโปรเจกต์: [frontend/pages/profile.js](../../frontend/pages/profile.js)
 
 </details>
+
+## 7.15 หน้าสมัครสมาชิก
+
+### ขั้นที่ 7.15.1 หน้า /register
+
+> 🎯 **ขั้นนี้จะได้:** ผู้ใช้ใหม่สมัครสมาชิกผ่านหน้าเว็บได้ (ข้อ 3.2.5.2 ลงทะเบียนเพื่อใช้งานระบบ)
+
+⌨️ **พิมพ์โค้ด:** เปิด `frontend/schemas/auth.js` เพิ่ม import ไว้บนสุด และเพิ่ม schema ต่อจาก `loginSchema`
+
+```js
+import { userSchema } from "./user";
+
+export const registerSchema = userSchema
+  .omit({ role: true })
+  .extend({
+    password: z.string().min(6, "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร").max(50, "รหัสผ่านต้องไม่เกิน 50 ตัวอักษร"),
+    confirm_password: z.string(),
+  })
+  .refine((d) => d.password === d.confirm_password, {
+    message: "ยืนยันรหัสผ่านไม่ตรงกัน",
+    path: ["confirm_password"],
+  });
+```
+
+⌨️ **พิมพ์โค้ด:** สร้างไฟล์ใหม่ `frontend/pages/register.js`
+
+```jsx
+import { useState } from "react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import api, { errorMessage } from "@/lib/api";
+import { goTo } from "@/lib/auth";
+import { validateWith } from "@/lib/validate";
+import { registerSchema } from "@/schemas/auth";
+import Field from "@/components/Field";
+
+// สมัครสมาชิก: บัญชีใหม่เป็นผู้รับการประเมินเสมอ
+export default function Register() {
+  const [error, setError] = useState("");
+  // register ตรงนี้คือฟังก์ชันผูกช่องกรอกของ React Hook Form ไม่ใช่การสมัครสมาชิก
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+    resolver: validateWith(registerSchema),
+  });
+
+  // ตัด confirm_password ออก ใช้ตรวจฝั่งหน้าเว็บเท่านั้น
+  const onSubmit = async ({ confirm_password, ...data }) => {
+    setError("");
+    try {
+      await api.post("/auth/register", data);
+      alert("สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ");
+      goTo("/login");
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  };
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-base-200 p-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="card bg-base-100 shadow w-full max-w-2xl">
+        <div className="card-body">
+          <h1 className="card-title text-2xl justify-center">สมัครสมาชิก</h1>
+          {error && <div className="alert alert-error">{error}</div>}
+          <div className="grid sm:grid-cols-2 gap-x-4">
+            <Field label="ชื่อผู้ใช้" error={errors.username}>
+              <input className="input w-full" autoComplete="username" {...register("username")} />
+            </Field>
+            <Field label="ชื่อ-สกุล" error={errors.full_name}>
+              <input className="input w-full" {...register("full_name")} />
+            </Field>
+            <Field label="รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)" error={errors.password}>
+              <input type="password" className="input w-full" autoComplete="new-password" {...register("password")} />
+            </Field>
+            <Field label="ยืนยันรหัสผ่าน" error={errors.confirm_password}>
+              <input type="password" className="input w-full" autoComplete="new-password" {...register("confirm_password")} />
+            </Field>
+            <Field label="อีเมล" error={errors.email}>
+              <input className="input w-full" {...register("email")} />
+            </Field>
+            <Field label="เบอร์โทร" error={errors.phone}>
+              <input className="input w-full" {...register("phone")} />
+            </Field>
+            <Field label="ตำแหน่ง" error={errors.position}>
+              <input className="input w-full" {...register("position")} />
+            </Field>
+            <Field label="แผนก/หน่วยงาน" error={errors.department}>
+              <input className="input w-full" {...register("department")} />
+            </Field>
+          </div>
+          <button className="btn btn-primary mt-2" disabled={isSubmitting}>
+            สมัครสมาชิก
+          </button>
+          <Link href="/login" className="link text-sm text-center">
+            มีบัญชีแล้ว? เข้าสู่ระบบ
+          </Link>
+        </div>
+      </form>
+    </main>
+  );
+}
+```
+
+🔍 **อ่านโค้ดทีละบรรทัด**
+
+| บรรทัด | ทำอะไร | เอาไว้ใช้ทำอะไร |
+|---|---|---|
+| 14-16 | ผูกฟอร์มกับ Zod แบบเดียวกับหน้า login | `register` ในบรรทัดนี้คือตัวผูกช่องกรอก **คนละเรื่องกับการสมัครสมาชิก** |
+| 19 | `{ confirm_password, ...data }` แยกช่องยืนยันรหัสออก ที่เหลือเก็บใน `data` | ช่องยืนยันใช้ตรวจฝั่งหน้าเว็บเท่านั้น ไม่ต้องส่งไป backend |
+| 22 | ส่งข้อมูลไปสมัคร | เรียก API จากบท 04 ขั้น 4.4.4 |
+| 23-24 | แจ้งสำเร็จ แล้วพาไปหน้า login | ยังไม่ได้ login ให้อัตโนมัติ ผู้ใช้ต้องเข้าสู่ระบบเอง |
+| 36 | จัด 2 คอลัมน์บนจอ ≥640px, มือถือ 1 คอลัมน์ | responsive |
+| 64-66 | ลิงก์กลับหน้า login | - |
+
+⌨️ **แก้โค้ด:** เปิด `pages/login.js` เพิ่ม import ใต้ `import { useState } from "react";`
+
+```jsx
+import Link from "next/link";
+```
+
+แล้วเพิ่มลิงก์ใต้ปุ่ม "เข้าสู่ระบบ" (ก่อน `</div>` ของ card-body)
+
+```jsx
+          <Link href="/register" className="link text-sm text-center">
+            ยังไม่มีบัญชี? สมัครสมาชิก
+          </Link>
+```
+
+✅ **ลองเลย:** เปิด http://localhost:3000/login แล้วกด "ยังไม่มีบัญชี? สมัครสมาชิก"
+1. กดสมัครโดยไม่กรอก → ขึ้นข้อความ error ใต้ช่องชื่อผู้ใช้ ชื่อ-สกุล และรหัสผ่าน
+2. กรอกรหัสยืนยันไม่ตรง → "ยืนยันรหัสผ่านไม่ตรงกัน"
+3. สมัคร `teach8` ให้สำเร็จ → alert แล้วกลับหน้า login → login ด้วยบัญชีนี้ได้ และไปหน้า `/evaluatee`
+4. สมัคร `teach8` ซ้ำ → กล่องแดง "ข้อมูลซ้ำกับที่มีอยู่แล้ว"
+5. ทดสอบเสร็จแล้ว logout และใช้ token ของ hr DELETE `/api/users/(id ของ teach8)`
 
 ---
 

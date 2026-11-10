@@ -21,9 +21,11 @@ Unit Test=node --test + node:assert / state ฝั่ง client=localStorage + l
 ## โครงโปรเจกต์ (Git repo เดียว อยู่ที่ C:\Eva_11)
 - frontend/: pages/, components/, lib/auth.js, lib/api.js, lib/validate.js, schemas/, Dockerfile
 - backend/: server.js (เปิด port), app.js (สร้าง express app ให้เทสต์ import ได้), env.js (โหลด .env),
-  db.js, routes/, middleware/, utils/, schemas/, sql/ (schema.sql, seed.sql), uploads/,
+  db.js, routes/, middleware/, utils/, schemas/, sql/ (schema.sql), uploads/,
   backups/ (ไฟล์สำรอง .sql ไม่ commit), tests/, Dockerfile
-- docs/criteria.md (เกณฑ์ฉบับเต็ม ห้ามแก้), docs/guide/ (คู่มือสอนทีละบท)
+- docs/criteria.md (เกณฑ์ฉบับเต็ม ห้ามแก้), docs/guide/ (คู่มือสอนทีละบท),
+  docs/api-map/ (แผนที่โค้ดรายเส้น API: shared.html ส่วนกลาง + person-1/2/3 แยกตามเด็ก 3 คน),
+  docs/tools/ (เครื่องมือของครู: สร้าง api-map/eva-guide.html และทดสอบคู่มือกับระบบ ใช้ marked เฉพาะในโฟลเดอร์นี้ ไม่ใช่ส่วนของระบบ)
 - docker-compose.yml, README.md (เอกสาร API), .env.example
 
 ## กติกาโค้ด
@@ -31,7 +33,8 @@ Unit Test=node --test + node:assert / state ฝั่ง client=localStorage + l
   async/await, แยกไฟล์ด้วย express.Router, db.js ใช้ mysql2/promise pool
 - Response รูปแบบเดียว: { status, message, data } และ HTTP status ให้ตรง (200/201/400/401/403/404/500)
 - Validate ด้วย Zod safeParse ทั้งสองฝั่ง (ฝั่งหน้าใช้ validateWith ใน lib/validate.js)
-- Auth: JWT + middleware verifyToken และ requireRole(...roles) ทุก route ที่ไม่ใช่ login
+- Auth: JWT + middleware verifyToken และ requireRole(...roles) ทุก route ที่ไม่ใช่ login, register และ health
+- ไม่ใช้ seed/mock data: บัญชีแรกสมัครผ่าน /register (ได้ role evaluatee เสมอ) แล้ว UPDATE role เป็น hr ใน DB
 - Frontend: อ่าน localStorage ใน useEffect เท่านั้น, login สำเร็จใช้ window.location.href,
   ทุกหน้าที่ต้อง login เช็ก role ใน useEffect แล้ว return null จนกว่าจะผ่าน
 - ทุกหน้า responsive (มือถือและ desktop) ด้วย class ของ Tailwind/DaisyUI

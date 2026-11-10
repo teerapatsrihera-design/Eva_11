@@ -5,7 +5,7 @@
 เรียนจบบทนี้แล้ว นักเรียนจะ
 - เก็บรหัสผ่านเป็น hash ด้วย `crypto.scrypt` (ไม่ใช้ bcrypt ตามที่โจทย์กำหนด)
 - เข้าใจว่าระบบ "จำ" ได้อย่างไรว่าใคร login อยู่ (JWT)
-- สร้าง API login และเปลี่ยนรหัสผ่าน
+- สร้าง API สมัครสมาชิก, login และเปลี่ยนรหัสผ่าน
 - ตรวจข้อมูลที่ส่งเข้ามาด้วย Zod
 - ป้องกัน API ไม่ให้คนที่ไม่มีสิทธิ์เรียกได้ (middleware)
 
@@ -18,7 +18,7 @@
 | ภาค | ทำอะไร | จำนวนขั้น |
 |---|---|---|
 | ภาค ก (4.1) | แนวคิด login, JWT, การตรวจข้อมูล | 3 ขั้น |
-| ภาค ข (4.2-4.9) | เขียนโค้ดทีละขั้น ทดสอบทุกขั้น | 21 ขั้น |
+| ภาค ข (4.2-4.9) | เขียนโค้ดทีละขั้น ทดสอบทุกขั้น | 23 ขั้น |
 
 ### ไฟล์ที่จะสร้าง/แก้ในบทนี้
 
@@ -27,13 +27,14 @@ backend/
 ├── utils/password.js       ← ขั้น 4.2  hash และตรวจรหัสผ่าน
 ├── schemas/
 │   ├── common.js           ← ขั้น 4.3  กฎตรวจข้อมูลที่ใช้ซ้ำ
-│   ├── auth.js             ← ขั้น 4.3  กฎของ login / เปลี่ยนรหัส
+│   ├── auth.js             ← ขั้น 4.3, 4.4  กฎของ login / สมัครสมาชิก / เปลี่ยนรหัส
+│   ├── user.js             ← ขั้น 4.4  กฎของข้อมูลผู้ใช้
 │   └── topic.js            ← ขั้น 4.3  กฎของหัวข้อ
 ├── middleware/
 │   ├── validate.js         ← ขั้น 4.3  ด่านตรวจข้อมูล
 │   └── auth.js             ← ขั้น 4.5  ด่านตรวจ token และสิทธิ์
 ├── routes/
-│   ├── auth.js             ← ขั้น 4.4, 4.6  login และเปลี่ยนรหัส
+│   ├── auth.js             ← ขั้น 4.4, 4.6  สมัครสมาชิก, login และเปลี่ยนรหัส
 │   └── topics.js           ← ขั้น 4.7  (แก้) ใส่ด่านตรวจ
 └── app.js                  ← ขั้น 4.4  (แก้) ต่อ route auth
 ```
@@ -53,7 +54,7 @@ backend/
 ```text
  เบราว์เซอร์                                  Backend
      │  POST /api/auth/login                       │
-     │  { username: "hr", password: "123456" }     │
+     │  { username: "hr1", password: "123456" }     │
      │ ───────────────────────────────────────────▶│ 1. หา user จาก username
      │                                             │ 2. เทียบรหัสกับ hash (verifyPassword)
      │                                             │ 3. ถูก → เซ็น token ด้วย JWT_SECRET
@@ -245,7 +246,7 @@ true
 false
 ```
 
-> 💡 **ใช้ทำอะไรได้อีก?** ถ้าอยากเปลี่ยนรหัสผ่านใน seed.sql เป็นรหัสอื่น ให้แก้ `"123456"` ในบรรทัด 3 แล้วเอา hash ที่ได้ไปแทนค่า `@pw` ในบท 02 ขั้น 2.5.2
+> 💡 hash ที่พิมพ์ออกมาแต่ละครั้งไม่เหมือนกัน เพราะ salt ถูกสุ่มใหม่ทุกครั้ง แต่ `verifyPassword` ยังตรวจถูกต้อง
 
 🧹 **เก็บกวาด:** ลบ `try-password.js`
 
@@ -675,12 +676,10 @@ app.use("/api/auth", authRoutes);
 ▶️ **ทดสอบ:** Thunder Client → **POST** `http://localhost:5000/api/auth/login` → Body JSON
 
 ```json
-{ "username": "hr", "password": "123456" }
+{ "username": "hr1", "password": "123456" }
 ```
 
-✅ **ต้องเห็น:** 200 "เข้าสู่ระบบสำเร็จ" และ `data.token` เป็นข้อความยาวขึ้นต้นด้วย `eyJ` และ `data.user.role` = `"hr"`
-
-✅ **ลองรหัสผิด:** เปลี่ยน password เป็น `"999999"` ต้องได้ **401** "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"
+✅ **ต้องเห็น:** **401** "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" ถูกต้องแล้ว เพราะยังไม่มีบัญชีในระบบ ขั้นถัดไปจะสร้างบัญชี
 
 ✅ **ลองไม่กรอก:** body `{}` ต้องได้ **400** "กรุณากรอกชื่อผู้ใช้"
 
@@ -688,9 +687,138 @@ app.use("/api/auth", authRoutes);
 
 | เห็นข้อความ | สาเหตุ | แก้ |
 |---|---|---|
-| login ถูกแต่ได้ 401 ตลอด | hash ใน seed ไม่ใช่ของ `123456` หรือยังไม่ได้รัน seed | ตรวจ `@pw` ใน seed.sql (บท 02 ขั้น 2.5.1) แล้วรีเซ็ตฐานข้อมูล |
-| `secretOrPrivateKey must have a value` | ไม่มี `JWT_SECRET` ใน .env | ตรวจ `.env` แล้วรีสตาร์ท server (`Ctrl + C` แล้ว `npm run dev`) |
 | 404 "ไม่พบ endpoint นี้" | ลืม `app.use("/api/auth", …)` หรือวางใต้บรรทัด 404 | ตรวจ app.js |
+
+### ขั้นที่ 4.4.4 API สมัครสมาชิก
+
+> 🎯 **ขั้นนี้จะได้:** สมัครสมาชิกได้ โดยบัญชีใหม่เป็นผู้รับการประเมินเสมอ (ข้อ 3.2.5.2 ลงทะเบียนเพื่อใช้งานระบบ)
+
+⌨️ **พิมพ์โค้ด:** สร้างไฟล์ใหม่ `backend/schemas/user.js`
+
+```js
+import { z } from "zod";
+import { requiredText, optionalText } from "./common.js";
+
+// hr เพิ่มได้เฉพาะผู้รับการประเมินและกรรมการ
+export const userSchema = z.object({
+  username: requiredText("กรุณากรอกชื่อผู้ใช้", 50)
+    .min(3, "ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร")
+    .regex(/^[a-zA-Z0-9_.]+$/, "ชื่อผู้ใช้ใช้ได้เฉพาะ a-z, 0-9, _ และ ."),
+  full_name: requiredText("กรุณากรอกชื่อ-สกุล", 100),
+  email: z
+    .union([z.literal(""), z.email("รูปแบบอีเมลไม่ถูกต้อง").max(100)])
+    .nullish()
+    .transform((v) => v || null),
+  phone: z
+    .union([z.literal(""), z.string().regex(/^0\d{8,9}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก ขึ้นต้นด้วย 0")])
+    .nullish()
+    .transform((v) => v || null),
+  position: optionalText(100),
+  department: optionalText(100),
+  role: z.enum(["evaluatee", "committee"], { error: "บทบาทต้องเป็นผู้รับการประเมินหรือกรรมการ" }),
+});
+```
+
+> 💡 กฎแต่ละบรรทัดจะอธิบายละเอียดในบท 05 ขั้น 5.2 ตอนนี้พิมพ์ตามไปก่อน
+
+⌨️ **แก้โค้ด:** เปิด `backend/schemas/auth.js` เพิ่ม import และ schema ใหม่
+
+```js
+import { userSchema } from "./user.js";
+
+// สมัครสมาชิก: ตัด role ออก ถ้าส่ง role มา Zod จะทิ้งให้เอง
+export const registerSchema = userSchema.omit({ role: true }).extend({ password: passwordText });
+```
+
+⌨️ **แก้โค้ด:** เปิด `backend/routes/auth.js`
+1. แก้บรรทัด import ของ schema ให้มี `registerSchema`
+
+```js
+import { loginSchema, registerSchema, changePasswordSchema } from "../schemas/auth.js";
+```
+
+2. พิมพ์ route นี้ **เหนือบรรทัด** `// POST /api/auth/login`
+
+```js
+// POST /api/auth/register  body: { username, password, full_name, email, phone, position, department }
+// ไม่ต้อง login และได้ role = evaluatee เสมอ (บัญชี hr คนแรกให้เปลี่ยน role ใน DB)
+router.post("/register", validate(registerSchema), async (req, res) => {
+  const u = req.body;
+  const [result] = await pool.query(
+    "INSERT INTO users (username, password_hash, full_name, email, phone, position, department, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?, ?, 'evaluatee', FALSE)",
+    [u.username, await hashPassword(u.password), u.full_name, u.email, u.phone, u.position, u.department]
+  );
+  ok(res, { id: result.insertId, username: u.username }, "สมัครสมาชิกสำเร็จ", 201);
+});
+```
+
+🔍 **อ่านโค้ดทีละบรรทัด**
+
+| บรรทัด | ทำอะไร | เอาไว้ใช้ทำอะไร |
+|---|---|---|
+| 3 | ไม่มี `verifyToken` | คนสมัครยังไม่มีบัญชี จึงยัง login ไม่ได้ |
+| 6 | เขียน `'evaluatee'` และ `FALSE` ไว้ใน SQL เลย | รับ role จากภายนอกไม่ได้ จึงสมัครเป็น hr เองไม่ได้ และคนสมัครตั้งรหัสเองแล้วจึงไม่ต้องบังคับเปลี่ยน |
+| 7 | hash รหัสผ่านก่อนบันทึก | ฐานข้อมูลไม่เก็บรหัสจริง |
+| 9 | ตอบ 201 พร้อม id ใหม่ | แพตเทิร์น "เพิ่ม" แบบเดียวกับบท 03 |
+
+> 🧩 syntax ใหม่: `.omit({ role: true })` = สร้าง schema ใหม่โดยตัดช่อง role ออก, `.extend({ … })` = เพิ่มช่องใหม่ต่อจากของเดิม
+
+### ขั้นที่ 4.4.5 สร้างบัญชี 6 บัญชี แล้วทดสอบ login
+
+> 🎯 **ขั้นนี้จะได้:** บัญชีจริงครบ 3 บทบาท ใช้ต่อทั้งคู่มือ
+
+⌨️ **ทำตาม:** Thunder Client → **POST** `http://localhost:5000/api/auth/register` → Body JSON ส่งทีละบัญชี **ตามลำดับนี้** แต่ละครั้งต้องได้ **201** และ `id` ตามตาราง
+
+```json
+{ "username": "hr1", "password": "123456", "full_name": "สมศรี ใจดี" }
+```
+
+| id | username | full_name | บทบาทที่จะตั้ง |
+|---|---|---|---|
+| 1 | `hr1` | สมศรี ใจดี | hr |
+| 2 | `comm1` | ประเสริฐ วงศ์ดี | committee |
+| 3 | `comm2` | วิไล สายทอง | committee |
+| 4 | `comm3` | ชัยวัฒน์ แก้วมา | committee |
+| 5 | `teach1` | สมชาย รักเรียน | evaluatee (ค่าเริ่มต้น) |
+| 6 | `teach2` | มาลี ศรีสุข | evaluatee (ค่าเริ่มต้น) |
+
+⌨️ **ทำตาม:** เปลี่ยน role ในฐานข้อมูล (พิมพ์ทีละบรรทัด ใช้ได้ใน **PowerShell** และ **Git Bash** หรือแก้ใน HeidiSQL/DBeaver ก็ได้)
+
+```bash
+echo "UPDATE users SET role='hr' WHERE username='hr1'" | docker exec -i eva_mysql sh -c 'mysql -uroot -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE'
+echo "UPDATE users SET role='committee' WHERE username LIKE 'comm%'" | docker exec -i eva_mysql sh -c 'mysql -uroot -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE'
+```
+
+> 💡 ชื่อบัญชีแรกคือ `hr1` เพราะชื่อผู้ใช้ต้องยาวอย่างน้อย 3 ตัว (`hr` สมัครไม่ได้)
+
+> 💡 **ทำไมต้องแก้ใน DB?** API สมัครสมาชิกสร้าง hr ไม่ได้ เพื่อความปลอดภัย บัญชี hr คนแรกจึงต้องตั้งโดยคนที่เข้าถึงฐานข้อมูลได้ ส่วนกรรมการคนอื่นๆ ในงานจริง hr จะเป็นคนเพิ่มผ่าน `POST /api/users` (บท 05)
+
+▶️ **ทดสอบ:** **POST** `http://localhost:5000/api/auth/login` → Body JSON
+
+```json
+{ "username": "hr1", "password": "123456" }
+```
+
+✅ **ต้องเห็น:** 200 "เข้าสู่ระบบสำเร็จ" และ `data.token` เป็นข้อความยาวขึ้นต้นด้วย `eyJ` และ `data.user.role` = `"hr"`
+
+✅ **ลองรหัสผิด:** เปลี่ยน password เป็น `"999999"` ต้องได้ **401** "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"
+
+✅ **ลองสมัครซ้ำ:** POST `/api/auth/register` ด้วย `hr1` อีกครั้ง ต้องได้ **400** "ข้อมูลซ้ำกับที่มีอยู่แล้ว"
+
+✅ **ลองแอบเป็น hr:** สมัคร `{ "username": "hack1", "password": "123456", "full_name": "x", "role": "hr" }` แล้ว login บัญชีนี้ ต้องได้ `role` เป็น `"evaluatee"` เมื่อดูผลแล้วลบบัญชีนี้ทิ้ง
+
+```bash
+echo "DELETE FROM users WHERE username='hack1'" | docker exec -i eva_mysql sh -c 'mysql -uroot -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE'
+```
+
+❗ **ถ้าไม่ได้**
+
+| เห็นข้อความ | สาเหตุ | แก้ |
+|---|---|---|
+| login ถูกแต่ได้ 401 ตลอด | ยังไม่ได้สมัครบัญชี หรือพิมพ์รหัสผิดตอนสมัคร | ลองสมัครใหม่ด้วยชื่ออื่น |
+| `secretOrPrivateKey must have a value` | ไม่มี `JWT_SECRET` ใน .env | ตรวจ `.env` แล้วรีสตาร์ท server (`Ctrl + C` แล้ว `npm run dev`) |
+| login ได้ แต่ role ยังเป็น evaluatee | login ก่อนรันคำสั่ง UPDATE | รัน UPDATE แล้ว login ใหม่ เพราะ role อยู่ใน token |
+| id ไม่ตรงตาราง | สมัครสลับลำดับ หรือเคยสมัครไม่สำเร็จ | รีเซ็ตฐานข้อมูล (บท 02 ขั้น 2.6.1) แล้วทำบท 03 ขั้น 3.10.6 และขั้นนี้ใหม่ |
 
 ## 4.5 ด่านตรวจ token และสิทธิ์
 
@@ -893,7 +1021,7 @@ router.put("/change-password", verifyToken, requireRole(...ALL_ROLES), validate(
 
 ✅ **ลองไม่ใส่ token** (แท็บ Auth เลือก None): ต้องได้ **401** "กรุณาเข้าสู่ระบบ"
 
-> 💡 **อย่าเพิ่งเปลี่ยนรหัสจริง** ถ้าเปลี่ยนแล้ว teach1 จะใช้ `123456` ไม่ได้ (แก้ได้ด้วยคำสั่งรีเซ็ตฐานข้อมูลในบท 02 ขั้น 2.6.1)
+> 💡 **อย่าเพิ่งเปลี่ยนรหัสจริง** เพราะบทต่อไปใช้ teach1 / `123456` ทดสอบ
 
 ## 4.7 ใส่ด่านให้ API หัวข้อ
 
@@ -1082,7 +1210,8 @@ export default router;
 |---|---|---|
 | รหัสผ่านเก็บเป็น hash (scrypt + salt) | ฐานข้อมูลหลุด ก็ไม่รู้รหัสจริง | `utils/password.js` |
 | JWT มีลายเซ็น + วันหมดอายุ | ปลอม/แก้ token ไม่ได้, token เก่าใช้ไม่ได้ตลอดไป | `routes/auth.js` |
-| `verifyToken` ทุก route ยกเว้น login | ไม่ login เรียก API ไม่ได้ (401) | `middleware/auth.js` |
+| `verifyToken` ทุก route ยกเว้น login, สมัครสมาชิก และ health | ไม่ login เรียก API ไม่ได้ (401) | `middleware/auth.js` |
+| สมัครสมาชิกได้ role = evaluatee เสมอ | สมัครเป็น hr เองไม่ได้ | `routes/auth.js` |
 | `requireRole` | login แล้วแต่บทบาทไม่ตรง เรียกไม่ได้ (403) | `middleware/auth.js` |
 | ใช้ `req.user.id` จาก token | แก้ข้อมูลของคนอื่นไม่ได้ | ทุก route ที่เกี่ยวกับ "ของตัวเอง" |
 | Zod ตรวจทุก body | ข้อมูลผิดรูปแบบเข้าฐานข้อมูลไม่ได้ | `middleware/validate.js` + `schemas/` |
@@ -1096,7 +1225,7 @@ export default router;
 
 | อาการ | สาเหตุ | วิธีแก้ |
 |---|---|---|
-| login ถูกแต่ได้ 401 ตลอด | hash ใน seed ไม่ใช่ของ `123456` | สร้าง hash ใหม่ (ขั้น 4.2.3) แล้วรีเซ็ตฐานข้อมูล |
+| login ถูกแต่ได้ 401 ตลอด | ยังไม่ได้สมัครบัญชี หรือรหัสไม่ตรงกับตอนสมัคร | ทำขั้น 4.4.5 |
 | `secretOrPrivateKey must have a value` | ไม่ได้โหลด `.env` หรือไม่มี `JWT_SECRET` | ตรวจ `.env` และ `import "./env.js"` บรรทัดแรกของ app.js |
 | ใส่ token แล้วยัง 401 | ลืมคำว่า `Bearer ` หรือคัดลอก token ไม่ครบ | ใช้แท็บ Auth → Bearer ของ Thunder Client |
 | `Cannot read properties of undefined (reading 'role')` | ใช้ `requireRole` โดยไม่มี `verifyToken` ก่อน | `verifyToken` ต้องมาก่อนเสมอ |

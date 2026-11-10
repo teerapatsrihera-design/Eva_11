@@ -1,9 +1,21 @@
 import { z } from "zod";
+import { userSchema } from "./user";
 
 export const loginSchema = z.object({
   username: z.string().trim().min(1, "กรุณากรอกชื่อผู้ใช้"),
   password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
 });
+
+export const registerSchema = userSchema
+  .omit({ role: true })
+  .extend({
+    password: z.string().min(6, "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร").max(50, "รหัสผ่านต้องไม่เกิน 50 ตัวอักษร"),
+    confirm_password: z.string(),
+  })
+  .refine((d) => d.password === d.confirm_password, {
+    message: "ยืนยันรหัสผ่านไม่ตรงกัน",
+    path: ["confirm_password"],
+  });
 
 export const changePasswordSchema = z
   .object({

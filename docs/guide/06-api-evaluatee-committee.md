@@ -25,7 +25,7 @@
 | ภาค | ทำอะไร | จำนวนขั้น |
 |---|---|---|
 | ภาค ก (6.1) | ภาพรวม API และวิธีคิดคะแนน | 3 ขั้น |
-| ภาค ข (6.2-6.9) | เขียนโค้ดทีละขั้น ทดสอบทุกขั้น | 36 ขั้น |
+| ภาค ข (6.2-6.9) | เขียนโค้ดทีละขั้น ทดสอบทุกขั้น | 37 ขั้น |
 
 ### ไฟล์ที่จะสร้างในบทนี้
 
@@ -46,7 +46,9 @@ backend/
 └── app.js                  ← (แก้) ต่อ route ใหม่
 ```
 
-> 💡 **ก่อนเริ่มบทนี้** ต้องทำบท 05 เสร็จ และ **รีเซ็ตฐานข้อมูล** (บท 02 ขั้น 2.6.1) ให้ข้อมูลตรงกับตัวอย่างในบทนี้
+> 💡 **ก่อนเริ่มบทนี้** ต้องทำบท 05 เสร็จ และมีข้อมูลจากบท 03-05 ครบ (ไม่ต้องรีเซ็ตฐานข้อมูล)
+>
+> ⌨️ **เตรียมบัญชีทดสอบ:** POST `/api/auth/register` body `{ "username": "teach3", "password": "123456", "full_name": "ครูทดสอบ" }` จดค่า `id` ไว้ แล้วใช้ token ของ hr POST `/api/assignments` body `{"committee_id":2,"evaluatee_id":(id ของ teach3),"committee_role":"chair"}` จดค่า `id` ไว้เรียกว่า **งานทดสอบ** บทนี้จะทดสอบกับ teach3 เพื่อไม่ให้ข้อมูลจริงเปลี่ยน และจะลบทิ้งตอนจบบท
 
 ---
 
@@ -114,7 +116,7 @@ backend/
 | ไม่ต้องแนบ (`none`) | ✅ | - | 1/1 = **100%** |
 
 **ความคืบหน้าทั้งหมด** = จำนวนตัวชี้วัดที่ครบ 100% ÷ จำนวนตัวชี้วัดทั้งหมด
-เช่น teach2 ในข้อมูลตัวอย่าง ครบ 2 จาก 6 ตัว = **33.33%** (ดูบท 02 ขั้น 2.5.5)
+เช่น ตัวชี้วัด 6 ตัว ครบ 2 ตัว = **33.33%**
 
 ---
 
@@ -783,7 +785,7 @@ router.get("/", async (req, res) => {
 - `filled++` = `filled = filled + 1`
 - `indicators.filter(…).map(…)` = กรองก่อน แล้วแปลงเฉพาะที่ผ่าน (ขึ้นบรรทัดใหม่หน้าจุดแต่ละคำสั่ง อ่านง่าย)
 
-✅ **ลองเลย:** login เป็น **teach2** → `GET http://localhost:5000/api/self-evaluations` → `summary.progress` = **33.33**, `summary.filled` = 2
+✅ **ลองเลย:** login เป็น **teach3** → `GET http://localhost:5000/api/self-evaluations` → `summary.progress` = **0**, `summary.filled` = 0 และเห็นตัวชี้วัด 6 ตัว
 
 ### ขั้นที่ 6.5.5 PUT กรอก/แก้คะแนนตนเอง
 
@@ -832,7 +834,7 @@ router.put("/:indicatorId", validate(selfScoreSchema), async (req, res) => {
 - ถ้ามีแล้ว (ชน `UNIQUE (evaluatee_id, indicator_id)` ของบท 02) → **แก้คอลัมน์ที่บอก**
 - `?` ทั้งหมด 4 ตัว (3 ใน VALUES + 1 ใน UPDATE) จึงส่งค่า 4 ตัว (score ซ้ำ 2 ครั้ง)
 
-✅ **ลองเลย:** (token ของ teach2)
+✅ **ลองเลย:** (token ของ teach3)
 - PUT `/api/self-evaluations/2` body `{"score":3}` → 200
 - PUT `/api/self-evaluations/3` body `{"score":3}` → **400** "คะแนนต้องเป็น 1 (มี) หรือ 0 (ไม่มี)" (ตัวชี้วัด 3 เป็นแบบมี/ไม่มี)
 
@@ -920,7 +922,7 @@ router.post("/:indicatorId/evidences", validate(evidenceSchema), async (req, res
 
 > 💡 `ON DUPLICATE KEY UPDATE id = id` = "ถ้ามีแล้ว แก้ id ให้เท่าเดิม" = ไม่เปลี่ยนอะไรเลย (เทคนิค "สร้างถ้ายังไม่มี")
 
-▶️ **ทดสอบ:** (token ของ teach2) Thunder Client → POST `http://localhost:5000/api/self-evaluations/1/evidences`
+▶️ **ทดสอบ:** (token ของ teach3) Thunder Client → POST `http://localhost:5000/api/self-evaluations/1/evidences`
 1. Body → **Form** → ติ๊ก **Files**
 2. ช่อง `description` = `แผนการสอน`
 3. ช่อง `file` เลือกไฟล์ PDF อะไรก็ได้
@@ -1048,7 +1050,7 @@ router.get("/:id/file", requireRole("hr", "evaluatee", "committee"), async (req,
 > 🧩 `res.download(ที่อยู่ไฟล์, ชื่อที่ให้ผู้ใช้เห็น)` เป็น 🟣 ของ Express
 
 ✅ **ลองเลย:**
-- token ของ teach2 → GET `/api/evidences/(id จากขั้น 6.5.7)/file` → ได้ไฟล์ PDF (Thunder Client แสดงเนื้อไฟล์)
+- token ของ teach3 → GET `/api/evidences/(id จากขั้น 6.5.7)/file` → ได้ไฟล์ PDF (Thunder Client แสดงเนื้อไฟล์)
 - token ของ **teach1** → GET ไฟล์เดียวกัน → **403** "ไม่มีสิทธิ์ดาวน์โหลดไฟล์นี้"
 
 ### ขั้นที่ 6.6.3 ลบหลักฐานของตัวเอง
@@ -1077,7 +1079,7 @@ router.delete("/:id", requireRole("evaluatee"), async (req, res) => {
 | 7 | ลบแถวในฐานข้อมูล | - |
 | 8 | ถ้ามีไฟล์ ลบไฟล์จริงด้วย | ไม่ให้ไฟล์ค้างในเครื่องโดยไม่มีใครใช้ |
 
-✅ **ลองเลย:** token ของ teach2 → DELETE `/api/evidences/(id จากขั้น 6.5.7)` → 200 และไฟล์ในโฟลเดอร์ uploads หายไป
+✅ **ลองเลย:** token ของ teach3 → DELETE `/api/evidences/(id จากขั้น 6.5.7)` → 200 และไฟล์ในโฟลเดอร์ uploads หายไป
 
 ## 6.7 API กรรมการ
 
@@ -1208,7 +1210,7 @@ export default router;
 | 29 | นับตัวชี้วัดทั้งหมด | ตัวหารของ "2/6" |
 | 30 | เติมจำนวนตัวชี้วัดลงทุกแถว | - |
 
-✅ **ลองเลย:** login เป็น **comm1** → `GET /api/committee/assignments` → 4 คน (teach1 ยืนยันแล้วอยู่ล่างสุด)
+✅ **ลองเลย:** login เป็น **comm1** → `GET /api/committee/assignments` → 3 คน (teach1, teach2, teach3) สถานะ `pending` ทั้งหมด
 
 ⌨️ **แก้โค้ด:** เปิด `app.js` เพิ่ม `import committeeRoutes from "./routes/committee.js";` และเพิ่ม **ใต้** `app.use("/api/evidences", evidenceRoutes);`
 
@@ -1305,7 +1307,7 @@ router.get("/assignments/:id", async (req, res) => {
 > 🧩 syntax ทั้งหมดสอนไปแล้ว (โครงเดียวกับขั้น 6.5.4)
 
 ✅ **ลองเลย:** (token ของ comm1)
-- `GET /api/committee/assignments/4` → 200 ข้อมูลของ teach2 (`summary.scored` = 0)
+- `GET /api/committee/assignments/(งานทดสอบ)` → 200 ข้อมูลของ teach3 (`summary.scored` = 0)
 - `GET /api/committee/assignments/5` (งานของ comm2) → **404**
 
 ### ขั้นที่ 6.7.6 บันทึกร่าง: ตรวจคะแนนทุกข้อ
@@ -1421,13 +1423,13 @@ beginTransaction ─▶ บันทึกคะแนน ─▶ เปลี่
 
 > 🏃 **ฉบับย่อ:** ถ้ายังไม่เข้าใจ transaction ใช้ `pool.query` ตรงๆ 2 คำสั่งก่อนได้ ทำงานเหมือนกันในกรณีปกติ
 
-✅ **ลองเลย:** (token ของ comm1) PUT `/api/committee/assignments/4/scores`
+✅ **ลองเลย:** (token ของ comm1) PUT `/api/committee/assignments/(งานทดสอบ)/scores`
 
 ```json
 { "scores": [{ "indicator_id": 1, "score": 4 }], "summary_comment": "ดี" }
 ```
 
-→ 200 "บันทึกร่างสำเร็จ" แล้ว GET `/api/committee/assignments` สถานะของ teach2 เป็น `draft`
+→ 200 "บันทึกร่างสำเร็จ" แล้ว GET `/api/committee/assignments` สถานะของ teach3 เป็น `draft`
 
 ✅ **ลองคะแนนผิด:** `{"scores":[{"indicator_id":3,"score":4}]}` → **400** `คะแนนของ "การทำวิจัยในชั้นเรียน" ไม่ถูกต้อง`
 
@@ -1468,7 +1470,7 @@ router.put("/assignments/:id/confirm", validate(confirmSchema), async (req, res)
 | 12-15 | สถานะ confirmed + ลายเซ็น + เวลายืนยัน (`NOW()` = เวลาปัจจุบันของ MySQL) | หลังจากนี้ PUT scores จะถูกปฏิเสธ (ขั้น 6.7.6 บรรทัด 6) |
 
 ✅ **ลองเลย:** (token ของ comm1)
-1. PUT `/api/committee/assignments/4/confirm` body `{"signature":"data:image/png;base64,iVBORw0KGgo="}` → **400** "ยังให้คะแนนไม่ครบ (1/6 ตัวชี้วัด)"
+1. PUT `/api/committee/assignments/(งานทดสอบ)/confirm` body `{"signature":"data:image/png;base64,iVBORw0KGgo="}` → **400** "ยังให้คะแนนไม่ครบ (1/6 ตัวชี้วัด)"
 2. บันทึกร่างให้ครบ 6 ข้อ
 
 ```json
@@ -1484,6 +1486,68 @@ router.put("/assignments/:id/confirm", validate(confirmSchema), async (req, res)
 ไฟล์จริงในโปรเจกต์: [backend/routes/committee.js](../../backend/routes/committee.js)
 
 </details>
+
+### ขั้นที่ 6.7.9 กรอกข้อมูลจริงให้ครบ
+
+> 🎯 **ขั้นนี้จะได้:** มีคะแนน หลักฐาน และผลของกรรมการจริงไว้ทดสอบรายงานและหน้าเว็บ
+
+📖 API ครบแล้ว จึงใช้ API สร้างข้อมูลจริงได้เลย ใช้เวลาประมาณ 10-15 นาที บันทึก request ไว้ใน Thunder Client จะได้ไม่ต้องพิมพ์ซ้ำ เตรียมไฟล์ PDF อะไรก็ได้ไว้ 1 ไฟล์
+
+**1) ผู้รับการประเมิน teach1** (token ของ teach1) ส่ง PUT `/api/self-evaluations/(เลขตัวชี้วัด)`
+
+| ตัวชี้วัด | body |
+|---|---|
+| 1 | `{"score":4}` |
+| 2 | `{"score":3}` |
+| 3 | `{"score":1}` |
+| 4 | `{"score":1}` |
+| 5 | `{"score":4}` |
+| 6 | `{"score":3}` |
+
+**2) หลักฐานของ teach1** ส่ง POST `/api/self-evaluations/(เลขตัวชี้วัด)/evidences` แบบ **Form**
+
+| ตัวชี้วัด | description | แนบ |
+|---|---|---|
+| 1 | แผนการจัดการเรียนรู้วิชาการเขียนโปรแกรมเว็บ | `file` = ไฟล์ PDF |
+| 2 | ใช้ Google Classroom ในทุกรายวิชา | `url` = `https://classroom.google.com` |
+| 2 | ผลิตคลิปสอนบน YouTube 10 คลิป | `url` = `https://youtube.com` |
+| 3 | วิจัยเรื่องการพัฒนาทักษะการเขียนโปรแกรมด้วย Pair Programming | `file` = ไฟล์ PDF |
+| 4 | อบรมหลักสูตร Full-stack Developer 30 ชั่วโมง | `url` = `https://example.com/cert.pdf` |
+| 6 | ร่วมกิจกรรมจิตอาสาพัฒนาชุมชน | `url` = `https://example.com/activity` |
+
+**3) ผู้รับการประเมิน teach2** (token ของ teach2)
+
+| คำขอ | ส่ง |
+|---|---|
+| PUT `/api/self-evaluations/1` | `{"score":3}` |
+| PUT `/api/self-evaluations/3` | `{"score":0}` |
+| PUT `/api/self-evaluations/5` | `{"score":3}` |
+| POST `/api/self-evaluations/1/evidences` แบบ Form | `description` = แผนการจัดการเรียนรู้วิชาฐานข้อมูล, `file` = ไฟล์ PDF |
+
+**4) กรรมการ comm1 ประเมิน teach1 จนยืนยันผล** (token ของ comm1) PUT `/api/committee/assignments/1/scores`
+
+```json
+{ "scores": [{"indicator_id":1,"score":4},{"indicator_id":2,"score":3},{"indicator_id":3,"score":1},{"indicator_id":4,"score":1},{"indicator_id":5,"score":4},{"indicator_id":6,"score":3}], "summary_comment": "ปฏิบัติงานได้ดี มีหลักฐานครบถ้วน" }
+```
+
+แล้ว PUT `/api/committee/assignments/1/confirm`
+
+```json
+{ "signature": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" }
+```
+
+**5) กรรมการ comm2 บันทึกร่าง teach1** (token ของ comm2) PUT `/api/committee/assignments/2/scores`
+
+```json
+{ "scores": [{"indicator_id":1,"score":3},{"indicator_id":2,"score":2}], "summary_comment": "ควรเพิ่มหลักฐานด้านสื่อการสอน" }
+```
+
+✅ **ลองเลย:**
+- token ของ teach1 → `GET /api/self-evaluations` → `summary.progress` = **100**
+- token ของ teach2 → `GET /api/self-evaluations` → `summary.progress` = **33.33**, `summary.filled` = 2
+- token ของ hr → PUT `/api/indicators/1` body `{ "topic_id": 1, "name": "การจัดทำแผนการจัดการเรียนรู้", "weight": 20, "score_type": "yes_no", "evidence_type": "file" }` → **400** "ตัวชี้วัดนี้มีการให้คะแนนแล้ว เปลี่ยนรูปแบบการประเมินไม่ได้" (จากบท 05 ขั้น 5.5.4)
+
+> 💡 ลิงก์ในตารางเป็นตัวอย่าง ส่วนลายเซ็นในข้อ 4 คือรูป PNG ขนาด 1×1 จุด ลายเซ็นจริงจะวาดผ่านหน้าเว็บในบท 10
 
 ## 6.8 API รายงาน
 
@@ -1793,7 +1857,7 @@ router.get("/committees/:id", requireRole("hr"), async (req, res) => {
 | `SUM(a.status = 'pending')` | รวม 1 ทั้งหมด = **นับแถวที่เป็น pending** |
 | `COALESCE(x, 0)` | ถ้า x เป็น NULL ใช้ 0 (กรรมการที่ไม่มีงานเลย SUM ได้ NULL) |
 
-✅ **ลองเลย:** (token ของ hr) `GET /api/reports/committees` → 3 แถว comm1: total 4 / `GET /api/reports/committees/2` → ตารางของ comm1
+✅ **ลองเลย:** (token ของ hr) `GET /api/reports/committees` → 3 แถว comm1: total 3 / `GET /api/reports/committees/2` → ตารางของ comm1
 
 <details>
 <summary>📄 ไฟล์ routes/reports.js ฉบับสมบูรณ์ (กดดูไว้เทียบ)</summary>
@@ -1809,11 +1873,11 @@ router.get("/committees/:id", requireRole("hr"), async (req, res) => {
 
 > 🎯 **ขั้นนี้จะได้:** มั่นใจว่า API ของผู้รับการประเมินครบ
 
-> 💡 รีเซ็ตฐานข้อมูลก่อน (บท 02 ขั้น 2.6.1) แล้ว login เป็น **teach2**
+> 💡 ไม่ต้องรีเซ็ตฐานข้อมูล login เป็น **teach3**
 
 | # | ทดสอบ | ต้องได้ |
 |---|---|---|
-| 1 | GET `/api/self-evaluations` | 200 หัวข้อ > ตัวชี้วัด + `summary.progress` = 33.33 |
+| 1 | GET `/api/self-evaluations` | 200 หัวข้อ > ตัวชี้วัด + `summary.progress` = 0 |
 | 2 | PUT `/api/self-evaluations/2` `{"score":3}` | 200 |
 | 3 | PUT `/api/self-evaluations/3` `{"score":3}` (ตัวชี้วัดแบบ มี/ไม่มี) | 400 "คะแนนต้องเป็น 1 (มี) หรือ 0 (ไม่มี)" |
 | 4 | POST `/api/self-evaluations/1/evidences` แบบ **Form**: `description`=แผนการสอน, `file`=ไฟล์ PDF | 201 |
@@ -1826,14 +1890,14 @@ router.get("/committees/:id", requireRole("hr"), async (req, res) => {
 
 > 🎯 **ขั้นนี้จะได้:** มั่นใจว่า API ของกรรมการและรายงานครบ
 
-**กรรมการ** (login `comm1`)
+**กรรมการ** (login `comm1`) งานทดสอบยืนยันไปแล้วในขั้น 6.7.8 ก่อนเริ่มให้ใช้ token ของ hr DELETE `/api/assignments/(งานทดสอบ)` แล้ว POST มอบหมายใหม่แบบเดิม จะได้ **งานทดสอบ** id ใหม่ที่สถานะ `pending`
 
 | # | ทดสอบ | ต้องได้ |
 |---|---|---|
-| 9 | GET `/api/committee/assignments` | 200 รายการงาน 4 คน |
+| 9 | GET `/api/committee/assignments` | 200 รายการงาน 3 คน |
 | 10 | GET `/api/committee/assignments/5` (งานของ comm2) | 404 |
-| 11 | PUT `/api/committee/assignments/4/scores` `{"scores":[{"indicator_id":1,"score":4}],"summary_comment":"ดี"}` | 200 สถานะเป็น draft |
-| 12 | PUT `/api/committee/assignments/4/confirm` `{"signature":"data:image/png;base64,iVBORw0KGgo="}` | 400 "ยังให้คะแนนไม่ครบ (1/6 ตัวชี้วัด)" |
+| 11 | PUT `/api/committee/assignments/(งานทดสอบ)/scores` `{"scores":[{"indicator_id":1,"score":4}],"summary_comment":"ดี"}` | 200 สถานะเป็น draft |
+| 12 | PUT `/api/committee/assignments/(งานทดสอบ)/confirm` `{"signature":"data:image/png;base64,iVBORw0KGgo="}` | 400 "ยังให้คะแนนไม่ครบ (1/6 ตัวชี้วัด)" |
 | 13 | ให้คะแนนครบ 6 ข้อ แล้ว confirm | 200 |
 | 14 | PUT scores อีกครั้ง | 400 "ยืนยันผลแล้ว แก้ไขไม่ได้" |
 
@@ -1843,9 +1907,11 @@ router.get("/committees/:id", requireRole("hr"), async (req, res) => {
 |---|---|---|
 | 15 | hr: GET `/api/reports/evaluatees?sort=score` | 200 คนที่มีผลยืนยันอยู่บน |
 | 16 | teach1: GET `/api/reports/evaluatees/6` | 403 |
-| 17 | comm2: GET `/api/reports/evaluatees/9` (ไม่ได้รับมอบหมาย teach5) | 403 "ไม่ได้รับมอบหมายให้ประเมินผู้นี้" |
+| 17 | comm2: GET `/api/reports/evaluatees/(id ของ teach3)` (ไม่ได้รับมอบหมาย) | 403 "ไม่ได้รับมอบหมายให้ประเมินผู้นี้" |
 
-✅ **ผ่านเมื่อ:** ครบ 17 ข้อ กด Save เข้า Collection `Eva` แล้ว **รีเซ็ตฐานข้อมูล** กลับเป็นข้อมูลตัวอย่างก่อนไปบท 07
+✅ **ผ่านเมื่อ:** ครบ 17 ข้อ กด Save เข้า Collection `Eva`
+
+🧹 **เก็บกวาด:** ใช้ token ของ hr DELETE `/api/users/(id ของ teach3)` งานทดสอบและคะแนนของ teach3 จะถูกลบตาม เหลือเฉพาะข้อมูลจริงไว้ใช้ในบทต่อไป **ห้ามรีเซ็ตฐานข้อมูล**
 
 ---
 
@@ -1859,7 +1925,7 @@ router.get("/committees/:id", requireRole("hr"), async (req, res) => {
 | ชื่อไฟล์ภาษาไทยเพี้ยน | ไม่ได้ตั้ง `defParamCharset: "utf8"` | ตรวจ app.js (บท 05 ขั้น 5.4.1) |
 | `ENOENT … uploads` | ไม่มีโฟลเดอร์ uploads | สร้าง `backend/uploads/` (บท 01 ขั้น 1.6.3) |
 | ให้คะแนนแล้ว error `Check constraint` | คะแนนเกิน 0-4 | `isValidScore` ต้องตรวจก่อนบันทึก |
-| ได้ "หัวข้อนี้ไม่อยู่ในช่วงเวลาการประเมิน" | วันที่ของหัวข้อไม่ครอบคลุมวันนี้ | แก้วันที่ใน seed หรือผ่านหน้า hr |
+| ได้ "หัวข้อนี้ไม่อยู่ในช่วงเวลาการประเมิน" | วันที่ของหัวข้อไม่ครอบคลุมวันนี้ | แก้ช่วงวันด้วย `PUT /api/topics/:id` หรือผ่านหน้า hr |
 | ระบบค้างหลังบันทึกร่างไปหลายครั้ง | ลืม `conn.release()` | ใส่ใน `finally` |
 | `ER_PARSE_ERROR` ที่ `IN ()` | ส่ง array ว่างให้ `IN (?)` | ตรวจ `if (!ids.length) return …` ก่อน |
 | `Cannot read properties of undefined (reading 'summary')` | เรียก `results[id]` ด้วย id ที่เป็นข้อความ | แปลงด้วย `Number(...)` ก่อน |

@@ -1,0 +1,17 @@
+{
+  "name": "eva-docs-tools",
+  "private": true,
+  "description": "เครื่องมือของครู: สร้าง/ตรวจเอกสาร docs/api-map และ docs/guide/eva-guide.html และทดสอบคู่มือกับระบบจริง (ไม่ใช่ส่วนของระบบที่นักเรียนส่งแข่ง)",
+  "type": "module",
+  "scripts": {
+    "map": "node gen.mjs && node build-map.mjs && node verify.mjs",
+    "map:check": "node check-map.mjs",
+    "guide": "node check-guide.mjs && node check-guide-html.mjs",
+    "capture": "sh run-tests.sh capture",
+    "test:dev": "sh run-tests.sh dev",
+    "test:docker": "sh run-tests.sh docker"
+  },
+  "devDependencies": {
+    "marked": "15.0.12"
+  }
+}

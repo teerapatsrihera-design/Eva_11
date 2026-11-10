@@ -5,10 +5,21 @@ import { ok, fail } from "../utils/response.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { verifyToken, requireRole } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
-import { loginSchema, changePasswordSchema } from "../schemas/auth.js";
+import { loginSchema, registerSchema, changePasswordSchema } from "../schemas/auth.js";
 
 const router = Router();
 const ALL_ROLES = ["hr", "evaluatee", "committee"];
+
+// POST /api/auth/register  body: { username, password, full_name, email, phone, position, department }
+// ไม่ต้อง login และได้ role = evaluatee เสมอ (บัญชี hr คนแรกให้เปลี่ยน role ใน DB)
+router.post("/register", validate(registerSchema), async (req, res) => {
+  const u = req.body;
+  const [result] = await pool.query(
+    "INSERT INTO users (username, password_hash, full_name, email, phone, position, department, role, must_change_password) VALUES (?, ?, ?, ?, ?, ?, ?, 'evaluatee', FALSE)",
+    [u.username, await hashPassword(u.password), u.full_name, u.email, u.phone, u.position, u.department]
+  );
+  ok(res, { id: result.insertId, username: u.username }, "สมัครสมาชิกสำเร็จ", 201);
+});
 
 // POST /api/auth/login  body: { username, password }
 router.post("/login", validate(loginSchema), async (req, res) => {
